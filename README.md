@@ -1,5 +1,7 @@
 # gavan-agent-config
 
+> New here? Read [VISION.md](VISION.md) first — it explains why every piece of this setup exists.
+
 AI agent configuration and onboarding setup for Gavan AI Labs development team.
 
 ## What this is
