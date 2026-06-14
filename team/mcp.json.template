@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "linkedin-browser": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/mnt/c/Users/{{WINDOWS_USERNAME}}/linkedin-mcp-server",
+        "run",
+        "linkedin-mcp-server"
+      ]
+    },
+    "figma": {
+      "command": "{{NODE_PATH}}",
+      "args": ["-y", "figma-developer-mcp"],
+      "env": {
+        "FIGMA_API_KEY": "{{FIGMA_API_KEY}}"
+      }
+    }
+  }
+}
