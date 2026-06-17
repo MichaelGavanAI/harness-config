@@ -70,12 +70,19 @@ Wait for user to confirm both keys are added.
 ### A3. Copy Claude config files
 
 ```bash
-mkdir -p ~/.claude/hooks ~/.claude/projects/global/memory ~/.claude/projects/work/memory
+mkdir -p ~/.claude/hooks ~/.claude/projects/global/memory ~/.claude/projects/work/memory \
+         ~/projects/work/.claude ~/projects/work/docs/superpowers
 
 # Global config
 cp team/claude/CLAUDE.md ~/.claude/CLAUDE.md
 cp team/claude/hooks/* ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
+
+# Work project config (Dev Squad rules, Gavan context)
+cp team/claude/work-project-CLAUDE.md ~/projects/work/.claude/CLAUDE.md
+
+# Squad manifest (team roles, handoff flow, reviewer triggers)
+cp team/squad-manifest.md ~/projects/work/docs/superpowers/team-manifest.md
 
 # Install push-to-git local plugin
 mkdir -p ~/.claude/plugins/cache/user/push-to-git/local/skills/push-to-git
@@ -270,8 +277,11 @@ This repo contains the full AI agent configuration for Gavan AI Labs development
 | Directory | Contents |
 |-----------|----------|
 | `team/claude/` | Shared Claude Code config (CLAUDE.md, settings, hooks) |
+| `team/claude/CLAUDE.md` | Global Claude config — copied to `~/.claude/CLAUDE.md` |
+| `team/claude/work-project-CLAUDE.md` | Work project Claude config — copied to `~/projects/work/.claude/CLAUDE.md` |
 | `team/claude/hooks/` | Custom hook scripts (model routing, context guard, superpowers gate, caveman) |
 | `team/claude/plugins/` | Local custom plugins |
+| `team/squad-manifest.md` | Dev squad roles, handoff flow, reviewer triggers — canonical source |
 | `team/mcp.json.template` | MCP server config template (fill in secrets on restore) |
 | `members/michael/` | Michael's personal memory + profile |
 

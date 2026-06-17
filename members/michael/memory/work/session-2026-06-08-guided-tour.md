@@ -1,13 +1,13 @@
 ---
 name: session-2026-06-08-guided-tour
-description: Guided tour + interactive guided case mode implementation session summary — pick-up point
+description: Guided tour + interactive guided case mode — implementation complete; navigation fix applied 2026-06-09
 metadata: 
   node_type: memory
   type: project
   originSessionId: 3d7089df-c852-4255-b665-23e83a3445c2
 ---
 
-# Session 2026-06-08 — Guided Tour & Interactive Guided Setup
+# Sessions 2026-06-08/09 — Guided Tour & Interactive Guided Setup
 
 ## What was built
 
@@ -29,19 +29,39 @@ metadata:
   - `GuidedCasePanel` imported
   - New state: `isGuidedMode`, `guidedStep`
   - useEffect listening to `gavan:wizard-step` → updates `guidedStep`; `gavan:wizard-closed` → clears guided mode
-  - `startGuidedMode()`: sets state + navigates to `/clinic-dashboard?view=new`
+  - `startGuidedMode()`: sets state only — NO navigation (panel shows in-place on current screen; `useNavigate` import removed)
   - `handleStartTour()` — clinic → `startGuidedMode()`; lab → `startTour("lab")`
   - `handleToggleGuidedMode()` — toggle guided mode on/off
-  - Renders `<GuidedCasePanel>` when `isGuidedMode && role === "clinic"`
+  - Renders `<GuidedCasePanel>` when `isGuidedMode && (role === "clinic" || role === "lab")`
   - Passes `role`, `isGuidedMode`, `onToggleGuidedMode` to HelpButton
 - `src/components/HelpButton.tsx` — new props: `role`, `isGuidedMode`, `onToggleGuidedMode`; added `Compass` icon; clinic users see BOTH "Guided Tour" (passive) and "Guided Setup" (interactive); lab sees only "Guided Tour"
 - `src/components/WelcomeModal.tsx` — CTA text: clinic → "Start Guided Setup", lab → "Start Tour"
 
-## Pending / Next session
-- **GuidedCasePanel visual fix**: panel is `w-72 bottom-6 left-6` — wizard content is centered leaving dead space left of panel; should be wider + positioned further left to fill that gutter
-- **Lab/Production guided mode**: lab role currently only has passive driver.js tour; needs interactive guided mode for lab workbench workflow (case queue → open case → accept/decline → colour instructions → stages → ship)
-- **Production view** (staining clinic tab): same lab guidance should apply when clinic uses "Production View" tab
-- All changes uncommitted (user preference: no git push at this stage)
+## Update: 2026-06-17 — Event-Driven Lab Guide (v2) COMPLETE
+
+Branch: `feat/guided-tour-event-driven` at `e83aaf5`
+
+**What changed from v1:**
+- `src/lib/labGuideContext.ts` (NEW) — module-level singleton tracking `hasCaseOpen`, `caseStatus`, `activeStage`
+- `src/lib/detectGuidedStep.ts` (NEW) — `detectLabStep()` maps context → step 1-6; `detectClinicStep(wizardStep)` passthrough
+- `src/components/GuidedCasePanel.tsx` — `mode="event-driven"` replaces `mode="manual"`. Auto-advances on real user actions. Step 1 has "Skip guide"/"Got it" CTA. Steps 2+ show `waitingHint`. Completion state shows CheckCircle2, auto-closes after 2200ms.
+- `src/components/lab/LabWorkbench.tsx` — dispatches `gavan:lab-step` (detail 1-6) at each workflow milestone; dispatches `gavan:lab-case-closed` when case deselected; calls `setLabGuideContext()` to keep singleton in sync
+- `src/App.tsx` — `startGuidedMode` now context-aware: uses `detectLabStep()` for initial step; nav guard sets `guidePendingRole` if user is on wrong page; pathname-watch effect closes guide on nav; AlertDialog confirms navigate-and-start
+- `src/lib/wizardGuidance.ts` — `waitingHint` field added to all 6 clinic + 6 lab steps; copy refreshed
+
+**Event dispatch sequence (lab):**
+- Open case → `gavan:lab-step` detail 2
+- Accept → detail 3 then 4
+- Decline → detail 3
+- Stage commit (past shape) → detail 5
+- Ship case → detail 6 (BEFORE setSelectedCase null to avoid race with lab-case-closed)
+- Close/deselect case → `gavan:lab-case-closed`
+
+**Tests:** 82/83 unit pass (1 pre-existing WelcomeModal failure), 5/5 Playwright pass
+
+**Pending / Next session:**
+- Roy's 5 remaining guided-tour bugs (from PR #28) — need list from Roy to assess if any overlap with new event-driven flow
+- Dead code to clean up: `handleGuidedNext`, `handleGuidedPrev`, `guidedTotal`, `startTour("lab")` path in App.tsx — now unused after event-driven switch
 
 ## Key technical details
 - Dev server: `http://localhost:8081/` (Vite)
