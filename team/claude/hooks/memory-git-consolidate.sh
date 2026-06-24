@@ -9,7 +9,15 @@ if [[ "$TOOL" != "Bash" ]]; then
     exit 0
 fi
 
-if ! echo "$CMD" | grep -qE '(git push|gh pr merge|git merge)'; then
+if ! echo "$CMD" | python3 -c "
+import sys, re
+cmd = sys.stdin.read()
+segments = re.split(r'[;&|]+', cmd)
+for seg in segments:
+    if re.match(r'\s*(git push|git merge|gh pr merge)\b', seg):
+        sys.exit(0)
+sys.exit(1)
+" 2>/dev/null; then
     exit 0
 fi
 
