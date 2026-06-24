@@ -69,7 +69,28 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/memory-git-consolidate.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/memory-journal.sh",
+            "timeout": 5,
+            "statusMessage": "Checking memory journal..."
+          }
+        ]
+      },
       {
         "hooks": [
           {
@@ -108,19 +129,31 @@
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
-    "push-to-git@user": true,
     "caveman@caveman": true,
     "slack@claude-plugins-official": true,
     "vercel@claude-plugins-official": true,
     "figma@claude-plugins-official": true,
-    "cloudflare@claude-plugins-official": true,
-    "supabase@claude-plugins-official": true
+    "skill-creator@claude-plugins-official": true,
+    "stitch-skills@google-labs-code": true,
+    "antigravity@marcosnahuel-antigravity": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "google-labs-code": {
+      "source": {
+        "source": "github",
+        "repo": "google-labs-code/stitch-skills"
+      }
+    },
+    "marcosnahuel-antigravity": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/MarcosNahuel/antigravity-plugin-cc.git"
       }
     }
   },
@@ -130,5 +163,7 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "effortLevel": "medium"
 }
+

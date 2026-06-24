@@ -33,10 +33,20 @@ fi
 
 MEMORY_CONTENT+=$'\n\n--- session-context ---\nCWD: '"$PWD"$'\nLoaded context: '"$CONTEXT_LABEL"
 
+# Journal consolidation check — if journal.md has entries from a previous session,
+# inject instruction to consolidate before doing anything else
+JOURNAL_NOTICE=""
+if [[ "$CONTEXT_LABEL" == "work" || "$CONTEXT_LABEL" == "personal" ]]; then
+    JOURNAL_PATH="$CLAUDE_PROJECTS/$CONTEXT_LABEL/memory/journal.md"
+    if [[ -f "$JOURNAL_PATH" ]] && [[ -s "$JOURNAL_PATH" ]]; then
+        JOURNAL_NOTICE=$'\n\nMEMORY_CONSOLIDATE_ON_START: journal.md has unprocessed entries from a previous session. As your FIRST action (before responding to user), consolidate these entries into the relevant memory/*.md structured files, then clear journal.md.'
+    fi
+fi
+
 if [[ -n "$MEMORY_CONTENT" ]]; then
-    FULL="$BASE"$'\n\nMEMORY:'"$MEMORY_CONTENT"
+    FULL="$BASE"$'\n\nMEMORY:'"$MEMORY_CONTENT""$JOURNAL_NOTICE"
 else
-    FULL="$BASE"
+    FULL="$BASE""$JOURNAL_NOTICE"
 fi
 
 jq -n --arg ctx "$FULL" '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":$ctx}}'
