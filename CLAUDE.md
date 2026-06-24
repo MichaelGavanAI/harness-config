@@ -118,21 +118,21 @@ NEVER log or echo secret values. Write directly to file.
 ### A6. Install Claude Code plugins
 
 ```bash
-# Add custom marketplace first
+# Add custom marketplaces first
 claude plugin marketplace add JuliusBrussee/caveman
+claude plugin marketplace add google-labs-code/stitch-skills
+claude plugin marketplace add MarcosNahuel/antigravity-plugin-cc
 
 # Install all plugins
 claude plugin install superpowers
+claude plugin install frontend-design
 claude plugin install caveman
 claude plugin install figma
 claude plugin install slack
 claude plugin install vercel
-claude plugin install cloudflare
-claude plugin install supabase
-claude plugin install frontend-design
-
-# Register local plugin
-# (push-to-git is already copied in A3 — just enable it in Claude Code settings)
+claude plugin install skill-creator
+claude plugin install stitch-skills
+claude plugin install antigravity
 ```
 
 ### A7. Clone project repos
