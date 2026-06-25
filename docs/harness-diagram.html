@@ -230,141 +230,82 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
 <div class="canvas-wrap" id="wrap">
 <div class="page" id="page">
 
-  <!-- Zone backgrounds -->
-  <div class="section" style="left:10px;top:10px;width:1580px;height:350px"></div>
-  <div class="zone-label" style="left:24px;top:18px">Hook Lifecycle — message flow</div>
-  <div class="section" style="left:10px;top:375px;width:1580px;height:630px"></div>
-  <div class="zone-label" style="left:24px;top:383px">Installed Components — inventory</div>
+  <!-- Zone 1: Lifecycle strip -->
+  <div class="section" style="left:10px;top:10px;width:1580px;height:68px"></div>
+  <div class="zone-label" style="left:24px;top:18px">The journey a prompt takes through the system</div>
+  <div class="node lifecycle" id="lc-sess"   style="left:55px;top:30px;width:140px">SessionStart</div>
+  <div class="node lifecycle" id="lc-user"   style="left:340px;top:30px;width:165px">UserPromptSubmit</div>
+  <div class="node lifecycle" id="lc-pre"    style="left:700px;top:30px;width:120px">PreToolUse</div>
+  <div class="node lifecycle" id="lc-post"   style="left:960px;top:30px;width:130px">PostToolUse</div>
+  <div class="node always"   id="lc-status" style="left:1240px;top:30px;width:120px">StatusLine</div>
 
-  <!-- ── FLOW ZONE ── -->
+  <!-- MEMORY pillar -->
+  <div class="pillar-card" style="left:10px;top:92px;width:517px;height:462px;border-color:#157858"></div>
+  <div class="pillar-title" style="left:26px;top:105px;color:#3ee8a8">Memory</div>
+  <div class="pain-line" style="left:26px;top:130px;width:490px">Without this: AI starts blank every session. Decisions made yesterday, bugs found last week — all gone.</div>
+  <div class="card-div" style="left:26px;top:172px;width:490px"></div>
+  <div class="node hook" id="p-mem-sess" style="left:20px;top:182px;width:228px">Loads memory at session start<span class="node-sub">global-session-start.sh</span></div>
+  <div class="node hook" id="p-mem-jrn"  style="left:258px;top:182px;width:200px">Writes journal every turn<span class="node-sub">memory-journal.sh</span></div>
+  <div class="node hook" id="p-mem-git"  style="left:20px;top:234px;width:240px">Consolidates memory on git push<span class="node-sub">memory-git-consolidate.sh</span></div>
+  <div class="node hook" id="p-mem-jmd"  style="left:20px;top:322px;width:148px">Raw session log<span class="node-sub">journal.md</span></div>
+  <div class="node always" id="p-mem-con" style="left:178px;top:322px;width:135px">Consolidation<span class="node-sub">step</span></div>
+  <div class="node mem"  id="p-mem-mds"  style="left:323px;top:322px;width:152px">Long-term memory<span class="node-sub">memory/*.md</span></div>
 
-  <!-- Lifecycle event nodes -->
-  <div class="node lifecycle" id="lc-sess"     style="left:55px;top:48px;width:140px">SessionStart</div>
-  <div class="node lifecycle" id="lc-user"     style="left:340px;top:48px;width:165px">UserPromptSubmit</div>
-  <div class="node lifecycle" id="lc-pre"      style="left:700px;top:48px;width:120px">PreToolUse</div>
-  <div class="node lifecycle" id="lc-post"     style="left:970px;top:48px;width:130px">PostToolUse</div>
-  <div class="node always"   id="lc-status"   style="left:1240px;top:48px;width:120px">StatusLine</div>
+  <!-- COST CONTROL pillar -->
+  <div class="pillar-card" style="left:541px;top:92px;width:517px;height:462px;border-color:#6040b8"></div>
+  <div class="pillar-title" style="left:557px;top:105px;color:#b898ff">Cost Control</div>
+  <div class="pain-line" style="left:557px;top:130px;width:490px">Without this: every task hits the expensive model. Budget burns fast. A $200/mo plan feels unavoidable.</div>
+  <div class="axis-note" style="left:557px;top:172px">Axis 1: right model tier (input cost) · Axis 2: terse output (caveman, ~40% fewer tokens)</div>
+  <div class="card-div" style="left:557px;top:186px;width:490px"></div>
+  <div class="node hook"   id="p-cost-mdl" style="left:551px;top:196px;width:228px">Routes task to right model tier<span class="node-sub">model-routing-reminder.js</span></div>
+  <div class="node hook"   id="p-cost-ver" style="left:789px;top:196px;width:212px">Blocks wrong-tier agent spawns<span class="node-sub">agent-model-verifier.js</span></div>
+  <div class="node plugin" id="p-cost-cav" style="left:551px;top:248px;width:210px">Cuts output tokens ~40% per response<span class="node-sub">caveman plugin</span></div>
+  <div class="node model"  id="p-cost-hai" style="left:551px;top:330px;width:155px">Haiku · Search / Read<span class="node-sub">1× cost baseline</span></div>
+  <div class="node model"  id="p-cost-son" style="left:716px;top:330px;width:160px">Sonnet · Code (default)<span class="node-sub">5× cost baseline</span></div>
+  <div class="node model"  id="p-cost-opu" style="left:551px;top:382px;width:165px">Opus · Architecture only<span class="node-sub">15× cost baseline</span></div>
 
-  <!-- Hooks in flow zone (f- prefix) -->
-  <!-- SessionStart hooks -->
-  <div class="node hook" id="f-global-sess" style="left:15px;top:148px;width:178px">global-session-start.sh</div>
-  <div class="node hook" id="f-cave-act"    style="left:205px;top:148px;width:148px">caveman-activate.js</div>
+  <!-- DEV DISCIPLINE pillar -->
+  <div class="pillar-card" style="left:1072px;top:92px;width:518px;height:462px;border-color:#2a5888"></div>
+  <div class="pillar-title" style="left:1088px;top:105px;color:#60a8e8">Dev Discipline</div>
+  <div class="pain-line" style="left:1088px;top:130px;width:490px">Without this: AI writes code without plan or review. Results unpredictable. You blame the model — wrong diagnosis.</div>
+  <div class="card-div" style="left:1088px;top:172px;width:490px"></div>
+  <div class="node hook"   id="p-dev-gate"  style="left:1082px;top:182px;width:220px">Blocks code writes without a plan<span class="node-sub">superpowers-gate.sh</span></div>
+  <div class="node plugin" id="p-dev-sp"    style="left:1312px;top:182px;width:148px">Superpowers workflow<span class="node-sub">superpowers plugin</span></div>
+  <div class="node model"  id="p-dev-spec"  style="left:1082px;top:244px;width:145px">Spec Owner · Opus<span class="node-sub">brainstorm → spec</span></div>
+  <div class="node model"  id="p-dev-plan"  style="left:1237px;top:244px;width:133px">Planner · Opus<span class="node-sub">spec → plan</span></div>
+  <div class="node model"  id="p-dev-dev"   style="left:1082px;top:296px;width:145px">Developer · Sonnet<span class="node-sub">plan → code</span></div>
+  <div class="node model"  id="p-dev-des"   style="left:1237px;top:296px;width:133px">Designer · Sonnet<span class="node-sub">UI before code</span></div>
+  <div class="node model"  id="p-dev-rel"   style="left:1082px;top:348px;width:145px">Release · Sonnet<span class="node-sub">verify → PR</span></div>
+  <div class="node mem"    id="p-dev-pw"    style="left:1237px;top:348px;width:133px">Playwright E2E<span class="node-sub">gate before merge</span></div>
 
-  <!-- UserPromptSubmit hooks (2 rows) -->
-  <div class="node hook" id="f-jrn"         style="left:300px;top:148px;width:152px">memory-journal.sh</div>
-  <div class="node hook" id="f-cave-trk"    style="left:466px;top:148px;width:172px">caveman-mode-tracker.js</div>
-  <div class="node hook" id="f-ctx"         style="left:300px;top:208px;width:142px">context-guard.js</div>
-  <div class="node hook" id="f-mdl"         style="left:454px;top:208px;width:184px">model-routing-reminder.js</div>
+  <!-- CONSISTENCY pillar -->
+  <div class="pillar-card" style="left:10px;top:568px;width:517px;height:522px;border-color:#807010"></div>
+  <div class="pillar-title" style="left:26px;top:581px;color:#e8c840">Consistency</div>
+  <div class="pain-line" style="left:26px;top:606px;width:490px">Without this: response mode resets every session. Terse style you set yesterday is gone. No predictable behavior baseline.</div>
+  <div class="card-div" style="left:26px;top:648px;width:490px"></div>
+  <div class="node hook" id="p-con-act" style="left:20px;top:658px;width:230px">Restores terse mode on session start<span class="node-sub">caveman-activate.js</span></div>
+  <div class="node hook" id="p-con-trk" style="left:260px;top:658px;width:220px">Persists mode changes to disk<span class="node-sub">caveman-mode-tracker.js</span></div>
+  <div class="node hook" id="p-con-sl"  style="left:20px;top:710px;width:210px">Shows current mode in UI footer<span class="node-sub">caveman-statusline.sh</span></div>
+  <div class="node plugin" id="p-con-cav" style="left:20px;top:762px;width:145px">Terse output engine<span class="node-sub">caveman plugin</span></div>
 
-  <!-- PreToolUse hooks -->
-  <div class="node hook" id="f-gate"        style="left:655px;top:148px;width:152px">superpowers-gate.sh</div>
-  <div class="node hook" id="f-agent-ver"   style="left:822px;top:148px;width:160px">agent-model-verifier.js</div>
+  <!-- RULES & WIRING pillar -->
+  <div class="pillar-card" style="left:541px;top:568px;width:517px;height:522px;border-color:#b03870"></div>
+  <div class="pillar-title" style="left:557px;top:581px;color:#ff80c0">Rules &amp; Wiring</div>
+  <div class="pain-line" style="left:557px;top:606px;width:490px">Without this: Claude has no idea what project it's in or what rules apply. Team members configure differently. New machine = rebuild from scratch.</div>
+  <div class="card-div" style="left:557px;top:648px;width:490px"></div>
+  <div class="node cfg" id="p-cfg-gl"  style="left:551px;top:658px;width:230px">Global rules: model routing, memory, baseline<span class="node-sub">~/.claude/CLAUDE.md</span></div>
+  <div class="node cfg" id="p-cfg-wk"  style="left:791px;top:658px;width:210px">Work context: team roles, no patient data<span class="node-sub">work/.claude/CLAUDE.md</span></div>
+  <div class="node cfg" id="p-cfg-rp"  style="left:551px;top:710px;width:230px">Repo rules: branch naming, CI/CD policy<span class="node-sub">gavanmanage/CLAUDE.md</span></div>
+  <div class="node cfg" id="p-cfg-st"  style="left:551px;top:762px;width:230px">Hook wiring: lifecycle → enforcement scripts<span class="node-sub">~/.claude/settings.json</span></div>
+  <div class="node svc" id="p-cfg-mc"  style="left:791px;top:762px;width:210px">External tools: Figma, LinkedIn wired in<span class="node-sub">~/.claude/mcp.json</span></div>
 
-  <!-- PostToolUse hooks -->
-  <div class="node hook" id="f-git-cons"    style="left:930px;top:148px;width:192px">memory-git-consolidate.sh</div>
-
-  <!-- StatusLine hooks -->
-  <div class="node always" id="f-cave-sl"   style="left:1205px;top:148px;width:162px">caveman-statusline.sh</div>
-
-  <!-- ── INVENTORY ZONE ── -->
-
-  <!-- GROUP: Hooks -->
-  <div class="section-title" style="left:24px;top:400px">Hooks</div>
-
-  <div class="node hook" id="i-global-sess" style="left:20px;top:422px;width:178px">global-session-start.sh</div>
-  <div class="node hook" id="i-cave-act"    style="left:210px;top:422px;width:148px">caveman-activate.js</div>
-  <div class="node hook" id="i-jrn"         style="left:20px;top:472px;width:152px">memory-journal.sh</div>
-  <div class="node hook" id="i-cave-trk"    style="left:20px;top:522px;width:172px">caveman-mode-tracker.js</div>
-  <div class="node hook" id="i-ctx"         style="left:210px;top:472px;width:142px">context-guard.js</div>
-  <div class="node hook" id="i-mdl"         style="left:210px;top:522px;width:184px">model-routing-reminder.js</div>
-  <div class="node hook" id="i-gate"        style="left:20px;top:572px;width:152px">superpowers-gate.sh</div>
-  <div class="node hook" id="i-agent-ver"   style="left:20px;top:622px;width:160px">agent-model-verifier.js</div>
-  <div class="node hook" id="i-git-cons"    style="left:210px;top:572px;width:192px">memory-git-consolidate.sh</div>
-  <div class="node always" id="i-cave-sl"   style="left:210px;top:622px;width:162px">caveman-statusline.sh</div>
-
-  <!-- GROUP: Plugins -->
-  <div class="section-title" style="left:424px;top:400px">Plugins</div>
-
-  <div class="node plugin" id="i-superpowers" style="left:420px;top:422px;width:118px">superpowers</div>
-  <div class="node plugin" id="i-fe-design"   style="left:420px;top:472px;width:132px">frontend-design</div>
-  <div class="node plugin" id="i-caveman-pl"  style="left:420px;top:522px;width:100px">caveman</div>
-  <div class="node plugin" id="i-figma"       style="left:420px;top:572px;width:80px">figma</div>
-  <div class="node plugin" id="i-slack"       style="left:420px;top:622px;width:75px">slack</div>
-  <div class="node plugin" id="i-vercel"      style="left:556px;top:422px;width:80px">vercel</div>
-  <div class="node plugin" id="i-skill-cr"    style="left:548px;top:472px;width:108px">skill-creator</div>
-  <div class="node plugin" id="i-stitch"      style="left:548px;top:522px;width:105px">stitch-skills</div>
-  <div class="node plugin" id="i-antigrav"    style="left:548px;top:572px;width:100px">antigravity</div>
-
-  <!-- GROUP: Memory -->
-  <div class="section-title" style="left:680px;top:400px">Memory System</div>
-
-  <div class="node hook"    id="i-jrnmd"    style="left:676px;top:422px;width:110px">journal.md</div>
-  <div class="node always"  id="i-consol"   style="left:676px;top:500px;width:110px">consolidation</div>
-  <div class="node mem"     id="i-memfiles" style="left:676px;top:578px;width:110px">memory/*.md</div>
-
-  <!-- GROUP: Config -->
-  <div class="section-title" style="left:820px;top:400px">Config Files</div>
-
-  <div class="node cfg" id="i-cfg-global" style="left:816px;top:422px;width:178px">~/.claude/CLAUDE.md</div>
-  <div class="node cfg" id="i-cfg-work"   style="left:816px;top:472px;width:188px">work/.claude/CLAUDE.md</div>
-  <div class="node cfg" id="i-cfg-repo"   style="left:816px;top:522px;width:188px">gavanmanage/CLAUDE.md</div>
-  <div class="node cfg" id="i-settings"   style="left:816px;top:572px;width:188px">~/.claude/settings.json</div>
-  <div class="node svc" id="i-mcp-json"   style="left:816px;top:622px;width:188px">~/.claude/mcp.json</div>
-
-  <!-- GROUP: MCP Servers -->
-  <div class="section-title" style="left:1040px;top:400px">MCP Servers</div>
-
-  <div class="node svc" id="i-mcp-figma"     style="left:1036px;top:422px;width:155px">figma-developer-mcp</div>
-  <div class="node svc" id="i-mcp-linkedin"  style="left:1036px;top:472px;width:155px">linkedin-browser</div>
-  <div class="node plugin" id="i-mcp-slack"  style="left:1036px;top:522px;width:155px">slack (via plugin)</div>
-
-  <!-- GROUP: Key Skills -->
-  <div class="section-title" style="left:1230px;top:400px">Key Skills (invocable)</div>
-
-  <div class="node plugin" id="i-sk-sp"    style="left:1226px;top:422px;width:155px">superpowers/*</div>
-  <div class="node plugin" id="i-sk-cave"  style="left:1226px;top:472px;width:155px">caveman/*</div>
-  <div class="node plugin" id="i-sk-agy"   style="left:1226px;top:522px;width:155px">antigravity/*</div>
-  <div class="node plugin" id="i-sk-vercel"style="left:1226px;top:572px;width:155px">vercel/*</div>
-  <div class="node plugin" id="i-sk-fig"   style="left:1226px;top:622px;width:155px">figma/*</div>
-
-  <!-- Separator line -->
-  <div style="position:absolute;left:20px;top:668px;width:1560px;height:1px;background:#1c2e42"></div>
-
-  <!-- GROUP: WHY — Purpose of the harness -->
-  <div class="section-title" style="left:24px;top:676px">Why This Harness Exists</div>
-  <div class="node why" id="w-memory"   style="left:20px;  top:698px;width:240px">Persistent Memory</div>
-  <div class="node why" id="w-discip"   style="left:330px; top:698px;width:240px">Workflow Discipline</div>
-  <div class="node why" id="w-consist"  style="left:640px; top:698px;width:240px">Response Consistency</div>
-  <div class="node why" id="w-cost"     style="left:950px; top:698px;width:290px">Cost Control (Model + Caveman)</div>
-  <div class="node why" id="w-portable" style="left:1290px;top:698px;width:230px">Team Portability</div>
-
-  <!-- Separator line -->
-  <div style="position:absolute;left:20px;top:758px;width:1560px;height:1px;background:#1c2e42"></div>
-
-  <!-- GROUP: Model Routing -->
-  <div class="section-title" style="left:24px;top:766px">Model Routing</div>
-  <div class="node model" id="m-haiku"  style="left:20px;  top:786px;width:430px">Haiku  ·  Search / Read / Grep / Glob</div>
-  <div class="node model" id="m-sonnet" style="left:570px; top:786px;width:380px">Sonnet  ·  Code writing (default)</div>
-  <div class="node model" id="m-opus"   style="left:1070px;top:786px;width:440px">Opus  ·  Architecture / Planning</div>
-
-  <!-- Separator line -->
-  <div style="position:absolute;left:20px;top:848px;width:1560px;height:1px;background:#1c2e42"></div>
-
-  <!-- GROUP: Development Workflow — process layer -->
-  <div class="section-title" style="left:24px;top:856px">Development Workflow — Process Layer (superpowers)</div>
-
-  <div class="node model"  id="sa-spec"     style="left:20px; top:876px;width:205px">Spec Owner · Opus</div>
-  <div class="node model"  id="sa-planner"  style="left:257px;top:876px;width:165px">Planner · Opus</div>
-  <div class="node model"  id="sa-dev"      style="left:454px;top:876px;width:195px">Developer · Sonnet</div>
-  <div class="node model"  id="sa-designer" style="left:681px;top:876px;width:190px">Designer · Sonnet</div>
-  <div class="node model"  id="sa-release"  style="left:903px;top:876px;width:180px">Release · Sonnet</div>
-  <div class="node mem"    id="sa-pw"       style="left:1370px;top:876px;width:155px">Playwright E2E</div>
-
-  <!-- Execution agents — dispatched by squad roles -->
-  <div style="position:absolute;left:24px;top:934px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2d4a62">Dispatched execution agents</div>
-  <div class="node always" id="sa-inv"      style="left:20px; top:952px;width:200px">cavecrew-investigator</div>
-  <div class="node always" id="sa-builder"  style="left:454px;top:952px;width:195px">cavecrew-builder</div>
-  <div class="node always" id="sa-rev"      style="left:903px;top:952px;width:175px">cavecrew-reviewer</div>
+  <!-- DESIGN SYSTEM pillar -->
+  <div class="pillar-card" style="left:1072px;top:568px;width:518px;height:522px;border-color:#a07820"></div>
+  <div class="pillar-title" style="left:1088px;top:581px;color:#c09030">Design System</div>
+  <div class="pain-line" style="left:1088px;top:606px;width:490px">Without this: UI components drift from the design system. Every feature reinvents spacing and colors. Figma and code quietly diverge.</div>
+  <div class="card-div" style="left:1088px;top:648px;width:490px"></div>
+  <div class="node plugin" id="p-ds-sync" style="left:1082px;top:658px;width:200px">Syncs components to design system<span class="node-sub">/design-sync skill</span></div>
+  <div class="node always" id="p-ds-env"  style="left:1292px;top:658px;width:178px">Design environment<span class="node-sub">Claude design env</span></div>
 
   <svg id="arrows"></svg>
 </div>
