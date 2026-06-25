@@ -406,93 +406,91 @@ var INFO = {
   'sa-dev':      {cat:'Squad Role: Developer',col:'#2a5888',desc:'Executes plan tasks. One task at a time. Commits after each. Runs tests.',content:'Model: Sonnet\nAgent type: cavecrew-builder\n\nInput:  one plan task\nOutput: code committed, tests passing\n\nAgy gate after:\n  agy -p "Adversarially review diff for bugs, PII: $(git diff HEAD~1)"'},
   'sa-designer': {cat:'Squad Role: Designer',col:'#2a5888',desc:'UI work BEFORE Developer. Designs component structure, layout, Figma reference.',content:'Model: Sonnet\nAgent type: cavecrew-builder\n\nInput:  UI feature spec\nOutput: component design + Figma reference\n\nMust run before Developer on any UI task.\n\nAgy gate after:\n  agy -p "Review component for accessibility gaps: ..."'},
   'sa-release':  {cat:'Squad Role: Release',col:'#2a5888',desc:'Verifies, commits, opens PR. Playwright E2E must pass before merge.',content:'Model: Sonnet\nSkill: superpowers:finishing-a-development-branch\n\nInput:  completed feature branch\nOutput: PR opened, Playwright passing\n\nAgy gate (final):\n  agy -p "Final adversarial review: $(git diff main...HEAD)"'},
-  'sa-pw':       {cat:'Verification: Playwright E2E',col:'#0f6050',desc:'Headless browser E2E tests. Required by Release before PR merge. Lives in gavan-cicd repo.',content:'Repo: Gavan-AI-Labs-LTD/gavan-cicd\nRunner: npx playwright test\n\nInvoked by:\n  superpowers:verification-before-completion\n  Release squad role (mandatory gate)\n\nBlocks: PR merge without passing tests\nCI: runs automatically on every PR open\n\nSkill: superpowers:verification-before-completion'}
-};
+  'sa-pw':       {cat:'Verification: Playwright E2E',col:'#0f6050',desc:'Headless browser E2E tests. Required by Release before PR merge. Lives in gavan-cicd repo.',content:'Repo: Gavan-AI-Labs-LTD/gavan-cicd\nRunner: npx playwright test\n\nInvoked by:\n  superpowers:verification-before-completion\n  Release squad role (mandatory gate)\n\nBlocks: PR merge without passing tests\nCI: runs automatically on every PR open\n\nSkill: superpowers:verification-before-completion'},
 
-// Flow hook → inventory hook ID pairs (for hover highlight + dashed arrows)
-var HOOK_PAIRS = [
-  ['f-global-sess','i-global-sess'],
-  ['f-cave-act',   'i-cave-act'],
-  ['f-jrn',        'i-jrn'],
-  ['f-cave-trk',   'i-cave-trk'],
-  ['f-ctx',        'i-ctx'],
-  ['f-mdl',        'i-mdl'],
-  ['f-gate',       'i-gate'],
-  ['f-agent-ver',  'i-agent-ver'],
-  ['f-git-cons',   'i-git-cons'],
-  ['f-cave-sl',    'i-cave-sl']
-];
+  'p-mem-sess':{cat:'Hook: SessionStart',col:'#7a3610',desc:'Loads all memory files into context at session start. Without this: Claude has no memory of past sessions.',content:'Path: ~/.claude/hooks/global-session-start.sh\nTrigger: SessionStart\n\n1. Detect CWD → work or personal context\n2. Load ~/.claude/projects/<ctx>/memory/*.md\n3. Inject as additionalContext\n4. If journal.md non-empty: inject consolidation notice'},
+  'p-mem-jrn': {cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Reminds Claude to write a journal entry each turn. Without this: journal.md never gets written.',content:'Path: ~/.claude/hooks/memory-journal.sh\nTrigger: UserPromptSubmit\n\nEvery turn: injects reminder to append 1 line to journal.md\n/compact detected: injects MEMORY_SYNC_REQUIRED first'},
+  'p-mem-git': {cat:'Hook: PostToolUse',col:'#7a3610',desc:'Triggers memory consolidation whenever code is pushed. Without this: journal grows stale.',content:'Path: ~/.claude/hooks/memory-git-consolidate.sh\nTrigger: PostToolUse (Bash matcher)\n\nFires on: git push / git merge / gh pr merge\nInjects: consolidate journal.md → memory/*.md now'},
+  'p-mem-jmd': {cat:'Memory',col:'#0f6050',desc:'Raw chronological session log. Append-only. Cleared after consolidation.',content:'Path: ~/.claude/projects/work/memory/journal.md\nFormat: [YYYY-MM-DD HH:MM] what done — why\n\nWritten by Claude each turn (prompted by memory-journal.sh)\nConsolidated → memory/*.md at session start, /compact, git push'},
+  'p-mem-con': {cat:'Memory',col:'#2a3d50',desc:'Consolidation step: journal entries → structured memory files.',content:'Triggers: SessionStart (if journal non-empty), /compact, git push/merge\n\nProcess:\n  Read journal.md\n  Update relevant memory/*.md\n  Clear journal.md'},
+  'p-mem-mds': {cat:'Memory',col:'#0f6050',desc:'Structured long-term memory loaded every session.',content:'Path: ~/.claude/projects/work/memory/\n\nFiles:\n  MEMORY.md        — index (always loaded)\n  project_*.md     — state, pending, bugs\n  feedback_*.md    — decisions, preferences\n  reference_*.md   — where to find things'},
+  'p-cost-mdl':{cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Injects model routing table every turn. Without this: subagents spawn on wrong (expensive) model tier.',content:'Path: ~/.claude/hooks/model-routing-reminder.js\n\nInjects every turn:\n  Search/read/grep → Haiku (1× cost)\n  Code writing     → Sonnet (5× cost)\n  Architecture     → Opus (15× cost)\n\nWith exact model IDs.'},
+  'p-cost-ver':{cat:'Hook: PreToolUse',col:'#7a3610',desc:'Blocks Agent tool calls that do not specify a valid model ID.',content:'Path: ~/.claude/hooks/agent-model-verifier.js\nTrigger: PreToolUse, matcher: Agent\n\nChecks agent call includes valid model param.\nBlocks if missing or invalid model ID.'},
+  'p-cost-cav':{cat:'Plugin',col:'#4a2d8c',desc:'Terse response mode. Drops articles, filler, hedging. ~40% fewer output tokens every response.',content:'Plugin: caveman@JuliusBrussee\n\nCost impact: ~40% output token reduction per response\nCompounds over long sessions.\n\nLevels: /caveman lite|full|ultra\nDeactivate: "stop caveman"'},
+  'p-cost-hai':{cat:'Model: Haiku',col:'#2a5888',desc:'Cheapest tier. All search, read, grep, glob tasks.',content:'Model ID: claude-haiku-4-5-20251001\nApprox cost: 1× baseline\n\nUse for: search, grep, glob, read files\nDo NOT use for: code writing, architecture'},
+  'p-cost-son':{cat:'Model: Sonnet',col:'#2a5888',desc:'Default tier. All code writing and editing tasks.',content:'Model ID: claude-sonnet-4-6\nApprox cost: 5× baseline\n\nUse for: code writing, editing, reviews\nDefault when no explicit tier specified'},
+  'p-cost-opu':{cat:'Model: Opus',col:'#2a5888',desc:'Most capable, most expensive. Architecture and design decisions only.',content:'Model ID: claude-opus-4-8\nApprox cost: 15× baseline\n\nUse for: architecture, spec/plan writing, complex design'},
+  'p-dev-gate':{cat:'Hook: PreToolUse',col:'#7a3610',desc:'Blocks writes to code files unless a plan doc exists. Enforces spec → plan → code sequence.',content:'Path: ~/.claude/hooks/superpowers-gate.sh\nTrigger: PreToolUse, matcher: Write\n\nBlocks .ts/.tsx/.js/.jsx/.py/.go/.rs\nunless docs/superpowers/plans/*.md exists.\nExit 1 = blocked.'},
+  'p-dev-sp':  {cat:'Plugin',col:'#4a2d8c',desc:'Core workflow plugin: brainstorming, writing plans, executing plans, debugging, finishing branches.',content:'Plugin: superpowers@claude-plugins-official\n\nKey skills:\n  brainstorming, writing-plans, executing-plans\n  systematic-debugging, test-driven-development\n  finishing-a-branch, subagent-driven-dev'},
+  'p-dev-spec':{cat:'Squad Role',col:'#2a5888',desc:'Spec Owner (Opus): turns idea into design spec using brainstorming skill.',content:'Model: Opus\nSkill: superpowers:brainstorming\nOutput: docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md'},
+  'p-dev-plan':{cat:'Squad Role',col:'#2a5888',desc:'Planner (Opus): turns spec into task-by-task implementation plan.',content:'Model: Opus\nSkill: superpowers:writing-plans\nOutput: docs/superpowers/plans/YYYY-MM-DD-<topic>-plan.md'},
+  'p-dev-dev': {cat:'Squad Role',col:'#2a5888',desc:'Developer (Sonnet): executes plan tasks one at a time, commits after each.',content:'Model: Sonnet\nAgent type: cavecrew-builder\nInput: one plan task → Output: code committed, tests passing'},
+  'p-dev-des': {cat:'Squad Role',col:'#2a5888',desc:'Designer (Sonnet): UI work BEFORE Developer. Designs component structure.',content:'Model: Sonnet\nAgent type: cavecrew-builder\nMust run before Developer on any UI task.'},
+  'p-dev-rel': {cat:'Squad Role',col:'#2a5888',desc:'Release (Sonnet): verifies, commits, opens PR. Playwright must pass.',content:'Model: Sonnet\nSkill: superpowers:finishing-a-development-branch\nOutput: PR opened, Playwright passing'},
+  'p-dev-pw':  {cat:'Verification',col:'#0f6050',desc:'Playwright E2E tests. Required before merge. Lives in gavan-cicd repo.',content:'Repo: Gavan-AI-Labs-LTD/gavan-cicd\nRunner: npx playwright test\nInvoked by: superpowers:verification-before-completion\nBlocks: PR merge without passing tests'},
+  'p-con-act': {cat:'Hook: SessionStart',col:'#7a3610',desc:'Restores caveman mode state from disk on session start. Without this: mode resets to off every session.',content:'Path: ~/.claude/hooks/caveman-activate.js\nReads ~/.claude/caveman-mode.json\nInjects CAVEMAN MODE ACTIVE if mode is on.'},
+  'p-con-trk': {cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Watches prompts for mode change commands and persists the new state to disk.',content:'Path: ~/.claude/hooks/caveman-mode-tracker.js\nWatches: "stop caveman", "/caveman lite|full|ultra"\nWrites: ~/.claude/caveman-mode.json'},
+  'p-con-sl':  {cat:'StatusLine Hook',col:'#2a3d50',desc:'Renders current caveman mode in the UI status bar after every response.',content:'Path: ~/.claude/hooks/caveman-statusline.sh\nTrigger: StatusLine\nOutputs: "CAVEMAN: full" or "CAVEMAN: off"'},
+  'p-con-cav': {cat:'Plugin',col:'#4a2d8c',desc:'Provides caveman mode levels and the cavecrew surgical agent types.',content:'Plugin: caveman@JuliusBrussee\n\nSkills: /caveman, /caveman-review, /caveman-commit\nSubagents: cavecrew-builder, cavecrew-investigator, cavecrew-reviewer'},
+  'p-cfg-gl':  {cat:'Config',col:'#7a2a5a',desc:'Global rules applied to every project and session: model routing, memory protocol, behavior baseline.',content:'Path: ~/.claude/CLAUDE.md\n\nCovers: model tag requirement, subagent routing table,\nmemory protocol, superpowers hard gate, agy gates'},
+  'p-cfg-wk':  {cat:'Config',col:'#7a2a5a',desc:'Work-level rules: Gavan AI Labs context, squad roles, non-negotiables.',content:'Path: ~/projects/work/.claude/CLAUDE.md\n\nCovers: company context, dev squad roles, role dispatch,\nnon-negotiables: no em dashes, no real patient data, no Supabase leaks'},
+  'p-cfg-rp':  {cat:'Config',col:'#7a2a5a',desc:'Repo-specific rules for gavanmanage: branch naming, push hooks, CI/CD policy.',content:'Path: ~/projects/work/gavanmanage/CLAUDE.md\n\nCovers: branch naming (feat/fix/hotfix),\npre-push hook behavior, pointer to gavan-cicd WORKFLOW.md'},
+  'p-cfg-st':  {cat:'Config',col:'#7a2a5a',desc:'Hook wiring: connects every lifecycle event to its enforcement scripts.',content:'Path: ~/.claude/settings.json\n\nKey wiring:\n  SessionStart     → global-session-start.sh, caveman-activate.js\n  UserPromptSubmit → memory-journal.sh, caveman-mode-tracker.js, model-routing-reminder.js\n  PreToolUse/Write → superpowers-gate.sh\n  PreToolUse/Agent → agent-model-verifier.js\n  PostToolUse/Bash → memory-git-consolidate.sh\n  StatusLine       → caveman-statusline.sh'},
+  'p-cfg-mc':  {cat:'Config',col:'#157858',desc:'MCP server registry: wires Figma and LinkedIn tools into Claude.',content:'Path: ~/.claude/mcp.json\n\nWires:\n  figma          → figma-developer-mcp (npm), needs FIGMA_API_KEY\n  linkedin-browser → linkedin-mcp-server (uv/Python)'},
+  'p-ds-sync': {cat:'Skill',col:'#4a2d8c',desc:'/design-sync: syncs components to the default design system.',content:'Skill: /design-sync\n\nKeeps UI components aligned to the team design system.\nRun before shipping any UI component.'},
+  'p-ds-env':  {cat:'Tool',col:'#2a3d50',desc:'Claude design environment: live preview and design iteration tool.',content:'Claude design environment\n\nUsed with /design-sync to ensure components\nmatch the established design system before code ships.'}
+};
 
 // Node rects for arrow drawing
 var NR = {
-  'lc-sess':   {x:55,  y:48, w:140,h:32},
-  'lc-user':   {x:340, y:48, w:165,h:32},
-  'lc-pre':    {x:700, y:48, w:120,h:32},
-  'lc-post':   {x:970, y:48, w:130,h:32},
-  'lc-status': {x:1240,y:48, w:120,h:32},
-
-  'f-global-sess':{x:15,  y:148,w:178,h:32},
-  'f-cave-act':   {x:205, y:148,w:148,h:32},
-  'f-jrn':        {x:300, y:148,w:152,h:32},
-  'f-cave-trk':   {x:466, y:148,w:172,h:32},
-  'f-ctx':        {x:300, y:208,w:142,h:32},
-  'f-mdl':        {x:454, y:208,w:184,h:32},
-  'f-gate':       {x:655, y:148,w:152,h:32},
-  'f-agent-ver':  {x:822, y:148,w:160,h:32},
-  'f-git-cons':   {x:930, y:148,w:192,h:32},
-  'f-cave-sl':    {x:1205,y:148,w:162,h:32},
-
-  'i-global-sess':{x:20,  y:422,w:178,h:32},
-  'i-cave-act':   {x:210, y:422,w:148,h:32},
-  'i-jrn':        {x:20,  y:472,w:152,h:32},
-  'i-cave-trk':   {x:20,  y:522,w:172,h:32},
-  'i-ctx':        {x:210, y:472,w:142,h:32},
-  'i-mdl':        {x:210, y:522,w:184,h:32},
-  'i-gate':       {x:20,  y:572,w:152,h:32},
-  'i-agent-ver':  {x:20,  y:622,w:160,h:32},
-  'i-git-cons':   {x:210, y:572,w:192,h:32},
-  'i-cave-sl':    {x:210, y:622,w:162,h:32},
-
-  'i-jrnmd':      {x:676, y:422,w:110,h:32},
-  'i-consol':     {x:676, y:500,w:110,h:32},
-  'i-memfiles':   {x:676, y:578,w:110,h:36},
-
-  'sa-spec':    {x:20,  y:876, w:205, h:36},
-  'sa-planner': {x:257, y:876, w:165, h:36},
-  'sa-dev':     {x:454, y:876, w:195, h:36},
-  'sa-designer':{x:681, y:876, w:190, h:36},
-  'sa-release': {x:903, y:876, w:180, h:36},
-  'sa-pw':      {x:1370,y:876, w:155, h:36},
-  'sa-inv':     {x:20,  y:952, w:200, h:36},
-  'sa-builder': {x:454, y:952, w:195, h:36},
-  'sa-rev':     {x:903, y:952, w:175, h:36}
+  'lc-sess':    {x:55,  y:30,  w:140, h:32},
+  'lc-user':    {x:340, y:30,  w:165, h:32},
+  'lc-pre':     {x:700, y:30,  w:120, h:32},
+  'lc-post':    {x:960, y:30,  w:130, h:32},
+  'lc-status':  {x:1240,y:30,  w:120, h:32},
+  'p-mem-sess': {x:20,  y:182, w:228, h:44},
+  'p-mem-jrn':  {x:258, y:182, w:200, h:44},
+  'p-mem-git':  {x:20,  y:234, w:240, h:44},
+  'p-mem-jmd':  {x:20,  y:322, w:148, h:44},
+  'p-mem-con':  {x:178, y:322, w:135, h:44},
+  'p-mem-mds':  {x:323, y:322, w:152, h:44},
+  'p-cost-mdl': {x:551, y:196, w:228, h:44},
+  'p-cost-ver': {x:789, y:196, w:212, h:44},
+  'p-cost-cav': {x:551, y:248, w:210, h:44},
+  'p-cost-hai': {x:551, y:330, w:155, h:44},
+  'p-cost-son': {x:716, y:330, w:160, h:44},
+  'p-cost-opu': {x:551, y:382, w:165, h:44},
+  'p-dev-gate': {x:1082,y:182, w:220, h:44},
+  'p-dev-sp':   {x:1312,y:182, w:148, h:44},
+  'p-dev-spec': {x:1082,y:244, w:145, h:44},
+  'p-dev-plan': {x:1237,y:244, w:133, h:44},
+  'p-dev-dev':  {x:1082,y:296, w:145, h:44},
+  'p-dev-des':  {x:1237,y:296, w:133, h:44},
+  'p-dev-rel':  {x:1082,y:348, w:145, h:44},
+  'p-dev-pw':   {x:1237,y:348, w:133, h:44},
+  'p-con-act':  {x:20,  y:658, w:230, h:44},
+  'p-con-trk':  {x:260, y:658, w:220, h:44},
+  'p-con-sl':   {x:20,  y:710, w:210, h:44},
+  'p-con-cav':  {x:20,  y:762, w:145, h:44},
+  'p-cfg-gl':   {x:551, y:658, w:230, h:44},
+  'p-cfg-wk':   {x:791, y:658, w:210, h:44},
+  'p-cfg-rp':   {x:551, y:710, w:230, h:44},
+  'p-cfg-st':   {x:551, y:762, w:230, h:44},
+  'p-cfg-mc':   {x:791, y:762, w:210, h:44},
+  'p-ds-sync':  {x:1082,y:658, w:200, h:44},
+  'p-ds-env':   {x:1292,y:658, w:178, h:44}
 };
 
-// Lifecycle → hook drop arrows (vertical)
-var FLOW_DROPS = [
-  {from:'lc-sess', to:'f-global-sess'},
-  {from:'lc-sess', to:'f-cave-act'},
-  {from:'lc-user', to:'f-jrn'},
-  {from:'lc-user', to:'f-cave-trk'},
-  {from:'lc-user', to:'f-ctx'},
-  {from:'lc-user', to:'f-mdl'},
-  {from:'lc-pre',  to:'f-gate'},
-  {from:'lc-pre',  to:'f-agent-ver'},
-  {from:'lc-post', to:'f-git-cons'},
-  {from:'lc-status',to:'f-cave-sl'}
-];
-
-// Lifecycle event chain arrows
 var LC_CHAIN = [
-  {f:'lc-sess',t:'lc-user',lbl:''},
-  {f:'lc-user',t:'lc-pre', lbl:''},
-  {f:'lc-pre', t:'lc-post',lbl:''}
+  {f:'lc-sess',t:'lc-user'},
+  {f:'lc-user',t:'lc-pre'},
+  {f:'lc-pre', t:'lc-post'},
+  {f:'lc-post',t:'lc-status'}
 ];
 
-// Memory flow arrows
 var MEM_FLOW = [
-  {f:'i-jrnmd',t:'i-consol',  lbl:'trigger'},
-  {f:'i-consol',t:'i-memfiles',lbl:'writes'}
+  {f:'p-mem-jmd',t:'p-mem-con'},
+  {f:'p-mem-con',t:'p-mem-mds'}
 ];
 
 var svgEl = document.getElementById('arrows');
@@ -535,73 +533,33 @@ function addText(x,y,txt,col){
   t.setAttribute('opacity','0.6');t.textContent=txt;svgEl.appendChild(t);
 }
 
-// Squad role flow: horizontal left→right
 var SQUAD_FLOW = [
-  {f:'sa-spec',t:'sa-planner'},
-  {f:'sa-planner',t:'sa-dev'},
-  {f:'sa-dev',t:'sa-designer'},
-  {f:'sa-designer',t:'sa-release'},
-  {f:'sa-release',t:'sa-pw',dashed:true}
+  {f:'p-dev-spec',t:'p-dev-plan'},
+  {f:'p-dev-plan',t:'p-dev-dev'},
+  {f:'p-dev-dev', t:'p-dev-des'},
+  {f:'p-dev-des', t:'p-dev-rel'},
+  {f:'p-dev-rel', t:'p-dev-pw', dashed:true}
 ];
 
-// Squad → cavecrew dispatch (vertical dashed)
-var SQUAD_DISPATCH = [
-  {f:'sa-spec',t:'sa-inv'},
-  {f:'sa-dev',t:'sa-builder'},
-  {f:'sa-release',t:'sa-rev'}
-];
-
-// Lifecycle chain
 LC_CHAIN.forEach(function(e){
   var f=NR[e.f],t=NR[e.t];
-  var x1=f.x+f.w,y1=f.y+f.h/2,x2=t.x,y2=t.y+t.h/2;
-  var cx1=x1+(x2-x1)*0.5,cy1=y1,cx2=x1+(x2-x1)*0.5,cy2=y2;
-  addPath('M'+x1+' '+y1+' C'+cx1+' '+cy1+','+cx2+' '+cy2+','+x2+' '+y2,'#2456a4',false,'0.6');
-});
-
-// Lifecycle → hook drops
-FLOW_DROPS.forEach(function(e){
-  var lc=NR[e.from],hk=NR[e.to];
-  if(!lc||!hk)return;
-  var x1=lc.x+lc.w/2,y1=lc.y+lc.h;
-  var x2=hk.x+hk.w/2,y2=hk.y;
-  var midy=(y1+y2)/2;
-  addPath('M'+x1+' '+y1+' C'+x1+' '+midy+','+x2+' '+midy+','+x2+' '+y2,'#7a3610',false,'0.5');
-});
-
-// Dashed flow→inventory arrows
-HOOK_PAIRS.forEach(function(pair){
-  var f=NR[pair[0]],t=NR[pair[1]];
   if(!f||!t)return;
-  var x1=f.x+f.w/2,y1=f.y+f.h;
-  var x2=t.x+t.w/2,y2=t.y;
-  var midy=(y1+y2)/2;
-  addPath('M'+x1+' '+y1+' C'+x1+' '+midy+','+x2+' '+midy+','+x2+' '+y2,'#7a3610',true,'0.5');
+  var x1=f.x+f.w,y1=f.y+f.h/2,x2=t.x,y2=t.y+t.h/2;
+  addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#2456a4',false,'0.6');
 });
 
-// Memory flow
 MEM_FLOW.forEach(function(e){
   var f=NR[e.f],t=NR[e.t];
   if(!f||!t)return;
-  var x1=f.x+f.w/2,y1=f.y+f.h,x2=t.x+t.w/2,y2=t.y;
+  var x1=f.x+f.w,y1=f.y+f.h/2,x2=t.x,y2=t.y+t.h/2;
   addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#0f6050',false,'0.7');
-  if(e.lbl)addText((x1+x2)/2-18,(y1+y2)/2,e.lbl,'#0f6050');
 });
 
-// Squad workflow flow (horizontal)
 SQUAD_FLOW.forEach(function(e){
   var f=NR[e.f],t=NR[e.t];
   if(!f||!t)return;
   var x1=f.x+f.w,y1=f.y+f.h/2,x2=t.x,y2=t.y+t.h/2;
   addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#2a5888',e.dashed||false,'0.65');
-});
-
-// Squad → cavecrew dispatch (vertical dashed)
-SQUAD_DISPATCH.forEach(function(e){
-  var f=NR[e.f],t=NR[e.t];
-  if(!f||!t)return;
-  var x1=f.x+f.w/2,y1=f.y+f.h,x2=t.x+t.w/2,y2=t.y;
-  addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#3a6080',true,'0.45');
 });
 
 // ── Tooltip ──
@@ -696,22 +654,6 @@ document.getElementById('ztheme').addEventListener('click',function(){
     el.style.background=lightMode?'#FAF8F2':'#1b2a3c';
   });
   this.textContent=lightMode?'🌑 dark':'☀ light';
-});
-
-// ── Hover highlight ──
-var pairMap = {};
-HOOK_PAIRS.forEach(function(p){pairMap[p[0]]=p[1];pairMap[p[1]]=p[0];});
-Object.keys(pairMap).forEach(function(id){
-  var el=document.getElementById(id);
-  if(!el)return;
-  el.addEventListener('mouseenter',function(){
-    var paired=document.getElementById(pairMap[id]);
-    if(paired)paired.classList.add('highlighted');
-  });
-  el.addEventListener('mouseleave',function(){
-    var paired=document.getElementById(pairMap[id]);
-    if(paired)paired.classList.remove('highlighted');
-  });
 });
 
 // ── Modal ──
