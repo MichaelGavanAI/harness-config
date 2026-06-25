@@ -151,60 +151,20 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
   <div class="sb-inner">
     <div class="sb-section">
       <div class="sb-hd">
-        <div class="sb-dot" style="background:#2456a4"></div>
+        <div class="sb-dot" style="background:#157858"></div>
         <div class="sb-hd-text">
-          <div class="sb-q">How does Claude know what to do?</div>
-          <span class="sb-label" style="background:rgba(36,86,164,.2);color:#4a7ac0">Hook Lifecycle</span>
+          <div class="sb-q">How does Claude remember between sessions?</div>
+          <span class="sb-label" style="background:rgba(21,120,88,.2);color:#30a870">Memory</span>
         </div><span class="sb-arrow">&#9660;</span>
       </div>
-      <div class="sb-expand"><div class="sb-body">Automated checkpoints fire at exact moments so Claude follows rules without anyone reminding it.</div></div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-hd">
-        <div class="sb-dot" style="background:#b04818"></div>
-        <div class="sb-hd-text">
-          <div class="sb-q">What are the actual rules?</div>
-          <span class="sb-label" style="background:rgba(176,72,24,.2);color:#c07040">Hooks · 9 scripts</span>
-        </div><span class="sb-arrow">&#9660;</span>
-      </div>
-      <div class="sb-expand"><div class="sb-body">9 scripts, each enforcing exactly one rule — no plan, no code; no model specified, no agent spawn.</div></div>
+      <div class="sb-expand"><div class="sb-body">Without this: AI starts blank every session. The journal captures decisions so Claude picks up exactly where it left off.</div></div>
     </div>
     <div class="sb-section">
       <div class="sb-hd">
         <div class="sb-dot" style="background:#6040b8"></div>
         <div class="sb-hd-text">
-          <div class="sb-q">Where do extra abilities come from?</div>
-          <span class="sb-label" style="background:rgba(96,64,184,.2);color:#8868d0">Plugins · 9 packs</span>
-        </div><span class="sb-arrow">&#9660;</span>
-      </div>
-      <div class="sb-expand"><div class="sb-body">Each plugin adds a domain — Figma, Slack, Vercel, structured workflows — installed once, available every session.</div></div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-hd">
-        <div class="sb-dot" style="background:#157858"></div>
-        <div class="sb-hd-text">
-          <div class="sb-q">How does Claude remember between sessions?</div>
-          <span class="sb-label" style="background:rgba(21,120,88,.2);color:#30a870">Memory System</span>
-        </div><span class="sb-arrow">&#9660;</span>
-      </div>
-      <div class="sb-expand"><div class="sb-body">Without this, every session starts blank — the journal captures decisions so Claude picks up exactly where it left off.</div></div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-hd">
-        <div class="sb-dot" style="background:#b03870"></div>
-        <div class="sb-hd-text">
-          <div class="sb-q">Where are the rules defined?</div>
-          <span class="sb-label" style="background:rgba(176,56,112,.2);color:#c05890">Config Files</span>
-        </div><span class="sb-arrow">&#9660;</span>
-      </div>
-      <div class="sb-expand"><div class="sb-body">Three layered CLAUDE.md files (global → project → repo) define the rules; settings.json wires which hooks fire when.</div></div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-hd">
-        <div class="sb-dot" style="background:#c09030"></div>
-        <div class="sb-hd-text">
           <div class="sb-q">Why do we need 3 different AI models?</div>
-          <span class="sb-label" style="background:rgba(192,144,48,.2);color:#c09030">Model Routing · Expense Balancer</span>
+          <span class="sb-label" style="background:rgba(96,64,184,.2);color:#8868d0">Cost Control · Expense Balancer</span>
         </div><span class="sb-arrow">&#9660;</span>
       </div>
       <div class="sb-expand">
@@ -219,11 +179,41 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
       <div class="sb-hd">
         <div class="sb-dot" style="background:#2a5888"></div>
         <div class="sb-hd-text">
-          <div class="sb-q">How does the team stay in sync?</div>
-          <span class="sb-label" style="background:rgba(42,88,136,.2);color:#4a80b8">Dev Workflow</span>
+          <div class="sb-q">Why can't AI just write code directly?</div>
+          <span class="sb-label" style="background:rgba(42,88,136,.2);color:#4a80b8">Dev Discipline</span>
         </div><span class="sb-arrow">&#9660;</span>
       </div>
-      <div class="sb-expand"><div class="sb-body">Spec → Plan → Code → Review → Release — hooks block skipping steps, Playwright verifies before anything merges.</div></div>
+      <div class="sb-expand"><div class="sb-body">Spec → Plan → Code enforced by hooks. No code file written without a plan doc. Playwright verifies before anything merges.</div></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-hd">
+        <div class="sb-dot" style="background:#907020"></div>
+        <div class="sb-hd-text">
+          <div class="sb-q">Why does behavior reset between sessions?</div>
+          <span class="sb-label" style="background:rgba(144,112,32,.2);color:#c0a020">Consistency</span>
+        </div><span class="sb-arrow">&#9660;</span>
+      </div>
+      <div class="sb-expand"><div class="sb-body">Caveman mode persists across sessions. Same terse style every time. Status line shows current mode. No re-enabling after every restart.</div></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-hd">
+        <div class="sb-dot" style="background:#b03870"></div>
+        <div class="sb-hd-text">
+          <div class="sb-q">Where are the rules defined?</div>
+          <span class="sb-label" style="background:rgba(176,56,112,.2);color:#c05890">Rules &amp; Wiring</span>
+        </div><span class="sb-arrow">&#9660;</span>
+      </div>
+      <div class="sb-expand"><div class="sb-body">Three layered CLAUDE.md files (global → work → repo) define the rules. settings.json wires which hooks fire when. mcp.json connects external tools.</div></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-hd">
+        <div class="sb-dot" style="background:#a07820"></div>
+        <div class="sb-hd-text">
+          <div class="sb-q">How does UI stay aligned to the design system?</div>
+          <span class="sb-label" style="background:rgba(160,120,32,.2);color:#c09030">Design System</span>
+        </div><span class="sb-arrow">&#9660;</span>
+      </div>
+      <div class="sb-expand"><div class="sb-body">/design-sync skill + Claude design environment keep every component aligned to the team's default design system before code ships.</div></div>
     </div>
   </div>
 </div>
