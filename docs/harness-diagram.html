@@ -30,7 +30,7 @@ html,body{height:100%;overflow:hidden;background:#1b2a3c;color:#d0dce8;font-fami
 .zone-label{position:absolute;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3a6080;background:#1b2a3c;padding:0 8px}
 .pillar-card{position:absolute;border-radius:14px;background:rgba(255,255,255,.035);border:1.5px solid rgba(255,255,255,.07)}
 .pillar-title{position:absolute;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
-.pain-line{position:absolute;font-size:10.5px;line-height:1.55;color:#c86040;font-style:italic}
+.pain-line{position:absolute;font-size:13px;font-weight:600;line-height:1.5;color:#e8cfc0;letter-spacing:.01em}
 .card-div{position:absolute;height:1px;background:rgba(255,255,255,.07)}
 .node-sub{display:block;font-size:8.5px;font-weight:400;opacity:.45;margin-top:1px;letter-spacing:0}
 .axis-note{position:absolute;font-size:9px;color:#3a5878;font-style:italic}
@@ -43,7 +43,7 @@ body.light .section-title{color:#5a6878}
 body.light .tip{background:#FFFFF8;border-color:#C8C0A8;color:#2a3040}
 body.light .mdl{background:#FDFAF4;border-color:#CCC4B0}
 body.light .pillar-card{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
-body.light .pain-line{color:#b04020}
+body.light .pain-line{color:#2a1a10}
 body.light .card-div{background:rgba(0,0,0,.1)}
 body.light .mhd{background:#FDFAF4}
 body.light .mcode{color:#3a4a5a}
@@ -538,6 +538,13 @@ var SQUAD_FLOW = [
   {f:'p-dev-rel', t:'p-dev-pw', dashed:true}
 ];
 
+var AGY_FLOW = [
+  {f:'p-dev-spec',t:'p-dev-agy'},
+  {f:'p-dev-plan',t:'p-dev-agy'},
+  {f:'p-dev-rel', t:'p-dev-agy'},
+  {f:'p-cost-mdl',t:'p-cost-agy'}
+];
+
 LC_CHAIN.forEach(function(e){
   var f=NR[e.f],t=NR[e.t];
   if(!f||!t)return;
@@ -557,6 +564,13 @@ SQUAD_FLOW.forEach(function(e){
   if(!f||!t)return;
   var x1=f.x+f.w,y1=f.y+f.h/2,x2=t.x,y2=t.y+t.h/2;
   addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#2a5888',e.dashed||false,'0.65');
+});
+
+AGY_FLOW.forEach(function(e){
+  var f=NR[e.f],t=NR[e.t];
+  if(!f||!t)return;
+  var x1=f.x+f.w/2,y1=f.y+f.h,x2=t.x+t.w/2,y2=t.y;
+  addPath('M'+x1+' '+y1+' L'+x2+' '+y2,'#2090c0',true,'0.6');
 });
 
 // ── Tooltip ──
