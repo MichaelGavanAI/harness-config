@@ -61,6 +61,7 @@ body.light .mcode{color:#3a4a5a}
 .svc     {background:#0a2418;border-color:#157858;color:#3ee8a0}
 .why     {background:#1c1400;border-color:#907020;color:#e8c840}
 .model   {background:#0e1e32;border-color:#2a5888;color:#60a8e8}
+.agy     {background:#062030;border-color:#2090c0;color:#40c8f0}
 
 #arrows{position:absolute;top:0;left:0;width:1600px;height:1100px;pointer-events:none}
 
@@ -253,6 +254,7 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
   <div class="node model"  id="p-cost-hai" style="left:551px;top:330px;width:155px">Haiku · Search / Read<span class="node-sub">1× cost baseline</span></div>
   <div class="node model"  id="p-cost-son" style="left:716px;top:330px;width:160px">Sonnet · Code (default)<span class="node-sub">5× cost baseline</span></div>
   <div class="node model"  id="p-cost-opu" style="left:551px;top:382px;width:165px">Opus · Architecture only<span class="node-sub">15× cost baseline</span></div>
+  <div class="node agy"   id="p-cost-agy" style="left:551px;top:436px;width:400px">Routes heavy reviews to Gemini — saves Claude tokens<span class="node-sub">agy CLI (Antigravity)</span></div>
 
   <!-- DEV DISCIPLINE pillar -->
   <div class="pillar-card" style="left:1072px;top:92px;width:518px;height:462px;border-color:#2a5888"></div>
@@ -267,6 +269,7 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
   <div class="node model"  id="p-dev-des"   style="left:1237px;top:296px;width:133px">Designer · Sonnet<span class="node-sub">UI before code</span></div>
   <div class="node model"  id="p-dev-rel"   style="left:1082px;top:348px;width:145px">Release · Sonnet<span class="node-sub">verify → PR</span></div>
   <div class="node mem"    id="p-dev-pw"    style="left:1237px;top:348px;width:133px">Playwright E2E<span class="node-sub">gate before merge</span></div>
+  <div class="node agy"   id="p-dev-agy"  style="left:1082px;top:402px;width:298px">Adversarial review gate: spec → plan → code → release<span class="node-sub">agy advisory gates</span></div>
 
   <!-- CONSISTENCY pillar -->
   <div class="pillar-card" style="left:10px;top:568px;width:517px;height:522px;border-color:#807010"></div>
@@ -410,6 +413,7 @@ var INFO = {
   'p-cost-hai':{cat:'Model: Haiku',col:'#2a5888',desc:'Cheapest tier. All search, read, grep, glob tasks.',content:'Model ID: claude-haiku-4-5-20251001\nApprox cost: 1× baseline\n\nUse for: search, grep, glob, read files\nDo NOT use for: code writing, architecture'},
   'p-cost-son':{cat:'Model: Sonnet',col:'#2a5888',desc:'Default tier. All code writing and editing tasks.',content:'Model ID: claude-sonnet-4-6\nApprox cost: 5× baseline\n\nUse for: code writing, editing, reviews\nDefault when no explicit tier specified'},
   'p-cost-opu':{cat:'Model: Opus',col:'#2a5888',desc:'Most capable, most expensive. Architecture and design decisions only.',content:'Model ID: claude-opus-4-8\nApprox cost: 15× baseline\n\nUse for: architecture, spec/plan writing, complex design'},
+  'p-cost-agy':{cat:'External Tool',col:'#2090c0',desc:'Routes heavy reviews to Gemini instead of Claude — cuts cost on long diffs and research tasks.',content:'Tool: agy CLI (Antigravity / Google Gemini)\n\nCost angle: Gemini reviews are cheap or free vs Opus at 15× baseline.\n\nUsage:\n  agy -p "review this diff: $(git diff HEAD~1)"\n\nNon-blocking: timeout 30, exits 0 if unavailable.\nEscalation: if output contains [SECURITY] [PII] [PATIENT] → escalate reviewer to Opus.'},
   'p-dev-gate':{cat:'Hook: PreToolUse',col:'#7a3610',desc:'Blocks writes to code files unless a plan doc exists. Enforces spec → plan → code sequence.',content:'Path: ~/.claude/hooks/superpowers-gate.sh\nTrigger: PreToolUse, matcher: Write\n\nBlocks .ts/.tsx/.js/.jsx/.py/.go/.rs\nunless docs/superpowers/plans/*.md exists.\nExit 1 = blocked.'},
   'p-dev-sp':  {cat:'Plugin',col:'#4a2d8c',desc:'Core workflow plugin: brainstorming, writing plans, executing plans, debugging, finishing branches.',content:'Plugin: superpowers@claude-plugins-official\n\nKey skills:\n  brainstorming, writing-plans, executing-plans\n  systematic-debugging, test-driven-development\n  finishing-a-branch, subagent-driven-dev'},
   'p-dev-spec':{cat:'Squad Role',col:'#2a5888',desc:'Spec Owner (Opus): turns idea into design spec using brainstorming skill.',content:'Model: Opus\nSkill: superpowers:brainstorming\nOutput: docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md'},
@@ -418,6 +422,7 @@ var INFO = {
   'p-dev-des': {cat:'Squad Role',col:'#2a5888',desc:'Designer (Sonnet): UI work BEFORE Developer. Designs component structure.',content:'Model: Sonnet\nAgent type: cavecrew-builder\nMust run before Developer on any UI task.'},
   'p-dev-rel': {cat:'Squad Role',col:'#2a5888',desc:'Release (Sonnet): verifies, commits, opens PR. Playwright must pass.',content:'Model: Sonnet\nSkill: superpowers:finishing-a-development-branch\nOutput: PR opened, Playwright passing'},
   'p-dev-pw':  {cat:'Verification',col:'#0f6050',desc:'Playwright E2E tests. Required before merge. Lives in gavan-cicd repo.',content:'Repo: Gavan-AI-Labs-LTD/gavan-cicd\nRunner: npx playwright test\nInvoked by: superpowers:verification-before-completion\nBlocks: PR merge without passing tests'},
+  'p-dev-agy': {cat:'External Tool',col:'#2090c0',desc:'Adversarial second-opinion gate at every squad handoff. Non-blocking — silently skips if unavailable.',content:'Tool: agy CLI (Antigravity / Google Gemini)\n\nGates (run after each role):\n  Spec Owner done  → agy reviews spec for edge cases, PII risks\n  Planner done     → agy reviews plan for task ordering issues\n  Developer commit → agy adversarially reviews diff for bugs, security\n  Designer ships   → agy reviews component for accessibility, design drift\n  Before merge     → agy final review for security, PII, regression\n\nEscalation rule: output contains [SECURITY] [PII] [PATIENT] → escalate reviewer to Opus\n\nNon-blocking wrapper:\n  OUTPUT=$(timeout 30 agy -p "$PROMPT" 2>/dev/null) || true'},
   'p-con-act': {cat:'Hook: SessionStart',col:'#7a3610',desc:'Restores caveman mode state from disk on session start. Without this: mode resets to off every session.',content:'Path: ~/.claude/hooks/caveman-activate.js\nReads ~/.claude/caveman-mode.json\nInjects CAVEMAN MODE ACTIVE if mode is on.'},
   'p-con-trk': {cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Watches prompts for mode change commands and persists the new state to disk.',content:'Path: ~/.claude/hooks/caveman-mode-tracker.js\nWatches: "stop caveman", "/caveman lite|full|ultra"\nWrites: ~/.claude/caveman-mode.json'},
   'p-con-sl':  {cat:'StatusLine Hook',col:'#2a3d50',desc:'Renders current caveman mode in the UI status bar after every response.',content:'Path: ~/.claude/hooks/caveman-statusline.sh\nTrigger: StatusLine\nOutputs: "CAVEMAN: full" or "CAVEMAN: off"'},
@@ -450,6 +455,7 @@ var NR = {
   'p-cost-hai': {x:551, y:330, w:155, h:44},
   'p-cost-son': {x:716, y:330, w:160, h:44},
   'p-cost-opu': {x:551, y:382, w:165, h:44},
+  'p-cost-agy': {x:551, y:436, w:400, h:44},
   'p-dev-gate': {x:1082,y:182, w:220, h:44},
   'p-dev-sp':   {x:1312,y:182, w:148, h:44},
   'p-dev-spec': {x:1082,y:244, w:145, h:44},
@@ -458,6 +464,7 @@ var NR = {
   'p-dev-des':  {x:1237,y:296, w:133, h:44},
   'p-dev-rel':  {x:1082,y:348, w:145, h:44},
   'p-dev-pw':   {x:1237,y:348, w:133, h:44},
+  'p-dev-agy':  {x:1082,y:402, w:298, h:44},
   'p-con-act':  {x:20,  y:658, w:230, h:44},
   'p-con-trk':  {x:260, y:658, w:220, h:44},
   'p-con-sl':   {x:20,  y:710, w:210, h:44},
