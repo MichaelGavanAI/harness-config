@@ -231,16 +231,17 @@ body.light .sb-section:hover .sb-arrow,body.light .sb-section.pinned .sb-arrow{c
   <div class="node always"   id="lc-status" style="left:1240px;top:30px;width:120px">StatusLine</div>
 
   <!-- MEMORY pillar -->
-  <div class="pillar-card" style="left:10px;top:92px;width:517px;height:462px;border-color:#157858"></div>
+  <div class="pillar-card" style="left:10px;top:92px;width:517px;height:514px;border-color:#157858"></div>
   <div class="pillar-title" style="left:26px;top:105px;color:#3ee8a8">Memory</div>
   <div class="pain-line" style="left:26px;top:130px;width:490px"><b>WHY needed:</b> AI starts blank every session. Decisions made yesterday, bugs found last week — all gone.</div>
   <div class="card-div" style="left:26px;top:172px;width:490px"></div>
   <div class="node hook" id="p-mem-sess" style="left:20px;top:182px;width:228px">Loads memory at session start<span class="node-sub">global-session-start.sh</span></div>
   <div class="node hook" id="p-mem-jrn"  style="left:258px;top:182px;width:200px">Writes journal every turn<span class="node-sub">memory-journal.sh</span></div>
   <div class="node hook" id="p-mem-git"  style="left:20px;top:234px;width:240px">Consolidates memory on git push<span class="node-sub">memory-git-consolidate.sh</span></div>
-  <div class="node hook" id="p-mem-jmd"  style="left:20px;top:322px;width:148px">Raw session log<span class="node-sub">journal.md</span></div>
-  <div class="node always" id="p-mem-con" style="left:178px;top:322px;width:135px">Consolidation<span class="node-sub">step</span></div>
-  <div class="node mem"  id="p-mem-mds"  style="left:323px;top:322px;width:152px">Long-term memory<span class="node-sub">memory/*.md</span></div>
+  <div class="node hook" id="p-mem-slack" style="left:270px;top:234px;width:238px">Injects Slack digest at session start<span class="node-sub">slack-fetch.sh</span></div>
+  <div class="node hook" id="p-mem-jmd"  style="left:20px;top:374px;width:148px">Raw session log<span class="node-sub">journal.md</span></div>
+  <div class="node always" id="p-mem-con" style="left:178px;top:374px;width:135px">Consolidation<span class="node-sub">step</span></div>
+  <div class="node mem"  id="p-mem-mds"  style="left:323px;top:374px;width:152px">Long-term memory<span class="node-sub">memory/*.md</span></div>
 
   <!-- COST CONTROL pillar -->
   <div class="pillar-card" style="left:541px;top:92px;width:517px;height:462px;border-color:#6040b8"></div>
@@ -337,6 +338,7 @@ var INFO = {
   'f-mdl':        {cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Makes sure cheap tasks use cheap AI — not the expensive one.',content:'# model-routing-reminder.js\nEvent: UserPromptSubmit\n\nInjects every turn:\n  Search/read/grep → Haiku\n  Code writing     → Sonnet (default)\n  Architecture     → Opus\n\nWith exact model IDs. Prevents wrong-tier spawns.'},
   'f-gate':       {cat:'Hook: PreToolUse → Write',col:'#7a3610',desc:'Won\'t let AI write code unless a plan exists first.',content:'# superpowers-gate.sh\nEvent: PreToolUse, matcher: Write\n\nBlocks .ts/.tsx/.js/.jsx/.py/.go/.rs writes\nunless docs/superpowers/plans/*.md exists\nin the file\'s git root.\n\nExit 1 = blocked. Exit 0 = allowed.\nCannot be bypassed without editing settings.json.'},
   'f-agent-ver':  {cat:'Hook: PreToolUse → Agent',col:'#7a3610',desc:'Blocks any sub-AI that forgets to declare which model to use.',content:'# agent-model-verifier.js\nEvent: PreToolUse, matcher: Agent\n\nChecks that agent call includes a model param.\nBlocks if model is missing or invalid.\n\nEnforces the subagent routing policy.'},
+  'f-slack':      {cat:'Hook: SessionStart',col:'#7a3610',desc:'Pulls all Slack messages into context before Claude says a word.',content:'# slack-fetch.sh\nEvent: SessionStart (via global-session-start.sh)\n\nCalls Slack Web API using user OAuth token\n(~/.slack_token — xoxp-, free, no claude -p).\n\nFetches:\n  • DM: Roy, Matan, Yael, May\n  • Group DM: Roy + Matan + Michael\n  • #cicd, #gavan-all-tech, #builds,\n    #all-gavan, #social, #ext-ai-all\n\nSkips bots. Refreshes only if digest\nis older than 30 minutes.\n\nOutput → ~/projects/work/slack-digest.md\nInjected into session as additionalContext.\n\nTrigger manually: /standup skill\nFallback: cloud Slack MCP plugin if\ntoken expires.'},
   'f-git-cons':   {cat:'Hook: PostToolUse → Bash',col:'#7a3610',desc:'Every code push triggers a memory tidy-up automatically.',content:'# memory-git-consolidate.sh\nEvent: PostToolUse, matcher: Bash\n\nSplits command on &&/;/| then checks\nif any segment starts with:\n  git push / git merge / gh pr merge\n\nInjects: "MEMORY_CONSOLIDATE:\n  consolidate journal.md into memory/*.md\n  now, then clear journal entries."\n\nCode shipping = natural memory checkpoint.'},
   'f-cave-sl':    {cat:'StatusLine Hook',col:'#2a3d50',desc:'Displays your active writing style in the footer bar.',content:'# caveman-statusline.sh\nEvent: StatusLine (runs after every response)\n\nReads ~/.claude/caveman-mode.json\nOutputs: "CAVEMAN: full" or "CAVEMAN: off"\n\nVisible in Claude Code footer.'},
 
@@ -404,6 +406,7 @@ var INFO = {
   'p-mem-sess':{cat:'Hook: SessionStart',col:'#7a3610',desc:'Gives Claude its memory back every time you start a conversation.',content:'Path: ~/.claude/hooks/global-session-start.sh\nTrigger: SessionStart\n\n1. Detect CWD → work or personal context\n2. Load ~/.claude/projects/<ctx>/memory/*.md\n3. Inject as additionalContext\n4. If journal.md non-empty: inject consolidation notice'},
   'p-mem-jrn': {cat:'Hook: UserPromptSubmit',col:'#7a3610',desc:'Nudges Claude to log what it did — so nothing is forgotten.',content:'Path: ~/.claude/hooks/memory-journal.sh\nTrigger: UserPromptSubmit\n\nEvery turn: injects reminder to append 1 line to journal.md\n/compact detected: injects MEMORY_SYNC_REQUIRED first'},
   'p-mem-git': {cat:'Hook: PostToolUse',col:'#7a3610',desc:'Every code push triggers a memory tidy-up automatically.',content:'Path: ~/.claude/hooks/memory-git-consolidate.sh\nTrigger: PostToolUse (Bash matcher)\n\nFires on: git push / git merge / gh pr merge\nInjects: consolidate journal.md → memory/*.md now'},
+  'p-mem-slack':{cat:'Hook: SessionStart',col:'#7a3610',desc:'Pulls all Slack messages into context before Claude says a word.',content:'Path: ~/projects/work/slack-fetch.sh\nCalled by: global-session-start.sh on SessionStart\n\nUses Slack Web API (user OAuth token, xoxp-)\nFree — no claude -p, no API billing.\n\nFetches:\n  DM: Roy, Matan, Yael, May\n  Group DM: Roy + Matan + Michael\n  #cicd, #gavan-all-tech, #builds,\n  #all-gavan, #social, #ext-ai-all\n\nSkips bots. Refreshes if digest >30 min old.\nOutput → ~/projects/work/slack-digest.md\nInjected as additionalContext.\n\nManual trigger: /standup skill'},
   'p-mem-jmd': {cat:'Memory',col:'#0f6050',desc:'The running diary of everything Claude did this session.',content:'Path: ~/.claude/projects/work/memory/journal.md\nFormat: [YYYY-MM-DD HH:MM] what done — why\n\nWritten by Claude each turn (prompted by memory-journal.sh)\nConsolidated → memory/*.md at session start, /compact, git push'},
   'p-mem-con': {cat:'Memory',col:'#2a3d50',desc:'Folds raw session notes into tidy long-term memory files.',content:'Triggers: SessionStart (if journal non-empty), /compact, git push/merge\n\nProcess:\n  Read journal.md\n  Update relevant memory/*.md\n  Clear journal.md'},
   'p-mem-mds': {cat:'Memory',col:'#0f6050',desc:'Claude\'s long-term brain — project state, decisions, and references.',content:'Path: ~/.claude/projects/work/memory/\n\nFiles:\n  MEMORY.md        — index (always loaded)\n  project_*.md     — state, pending, bugs\n  feedback_*.md    — decisions, preferences\n  reference_*.md   — where to find things'},
@@ -446,9 +449,10 @@ var NR = {
   'p-mem-sess': {x:20,  y:182, w:228, h:44},
   'p-mem-jrn':  {x:258, y:182, w:200, h:44},
   'p-mem-git':  {x:20,  y:234, w:240, h:44},
-  'p-mem-jmd':  {x:20,  y:322, w:148, h:44},
-  'p-mem-con':  {x:178, y:322, w:135, h:44},
-  'p-mem-mds':  {x:323, y:322, w:152, h:44},
+  'p-mem-slack':{x:270, y:234, w:238, h:44},
+  'p-mem-jmd':  {x:20,  y:374, w:148, h:44},
+  'p-mem-con':  {x:178, y:374, w:135, h:44},
+  'p-mem-mds':  {x:323, y:374, w:152, h:44},
   'p-cost-mdl': {x:551, y:196, w:228, h:44},
   'p-cost-ver': {x:789, y:196, w:212, h:44},
   'p-cost-cav': {x:551, y:248, w:210, h:44},
@@ -486,6 +490,7 @@ var LC_CHAIN = [
 ];
 
 var MEM_FLOW = [
+  {f:'p-mem-slack',t:'p-mem-jmd'},
   {f:'p-mem-jmd',t:'p-mem-con'},
   {f:'p-mem-con',t:'p-mem-mds'}
 ];

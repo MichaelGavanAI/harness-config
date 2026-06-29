@@ -33,6 +33,18 @@ fi
 
 MEMORY_CONTENT+=$'\n\n--- session-context ---\nCWD: '"$PWD"$'\nLoaded context: '"$CONTEXT_LABEL"
 
+# Slack digest — run fetch if work context and token exists
+if [[ "$CONTEXT_LABEL" == "work" ]] && [[ -f "$HOME/.slack_token" ]]; then
+    DIGEST_PATH="$HOME/projects/work/slack-digest.md"
+    # Refresh if older than 30 minutes or missing
+    if [[ ! -f "$DIGEST_PATH" ]] || [[ $(find "$DIGEST_PATH" -mmin +30 2>/dev/null | wc -l) -gt 0 ]]; then
+        bash "$HOME/projects/work/slack-fetch.sh" >/dev/null 2>&1 || true
+    fi
+    if [[ -f "$DIGEST_PATH" ]]; then
+        MEMORY_CONTENT+=$'\n\n--- slack-digest ---\n'"$(cat "$DIGEST_PATH")"
+    fi
+fi
+
 # Journal consolidation check — if journal.md has entries from a previous session,
 # inject instruction to consolidate before doing anything else
 JOURNAL_NOTICE=""
