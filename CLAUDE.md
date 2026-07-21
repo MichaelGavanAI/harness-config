@@ -31,9 +31,13 @@ nvm use 22
 # Claude Code CLI
 npm install -g @anthropic-ai/claude-code
 
-# Supabase CLI
+# Supabase CLI (needed for `supabase db diff --schema michael`, not for local Docker — Michael no longer runs local Supabase)
 brew install supabase/tap/supabase   # macOS
 # or: curl -sL https://supabase.com/install.sh | sh   # Linux
+
+# postgresql-client (psql) — needed to query/verify the michael schema directly
+brew install libpq && brew link --force libpq   # macOS
+# or: sudo apt-get install -y postgresql-client   # Linux/WSL
 
 # GitHub CLI
 gh auth login   # korm85 account — follow prompts
@@ -84,6 +88,21 @@ cp team/claude/work-project-CLAUDE.md ~/projects/work/.claude/CLAUDE.md
 # Squad manifest (team roles, handoff flow, reviewer triggers)
 cp team/squad-manifest.md ~/projects/work/docs/superpowers/team-manifest.md
 
+# Per-project memory buckets — global/work buckets alone are NOT enough. Claude Code keeps a
+# THIRD memory bucket per project directory (escaped cwd, e.g. gavanmanage, gavan-cicd), and
+# most of the real day-to-day project knowledge (schema state, in-flight work, bug history)
+# lives there, not in global/work. Restore every per-project bucket this repo has a snapshot of:
+for proj_dir in members/michael/memory/projects/*/; do
+  [ -d "$proj_dir" ] || continue
+  proj_name=$(basename "$proj_dir")
+  mkdir -p ~/.claude/projects/"$proj_name"/memory
+  cp -r "$proj_dir"/* ~/.claude/projects/"$proj_name"/memory/
+done
+
+# Restore personal skills (e.g. harness-health)
+mkdir -p ~/.claude/skills
+cp -r team/claude/skills/* ~/.claude/skills/
+
 # Install push-to-git local plugin
 mkdir -p ~/.claude/plugins/cache/user/push-to-git/local/skills/push-to-git
 cp team/claude/plugins/push-to-git/skills/push-to-git/SKILL.md \
@@ -93,6 +112,17 @@ cp team/claude/plugins/push-to-git/skills/push-to-git/SKILL.md \
 cp members/michael/memory/global/* ~/.claude/projects/global/memory/
 cp members/michael/memory/work/* ~/.claude/projects/work/memory/
 ```
+
+### Reinstall plugins
+
+Read `team/claude/installed-plugins.json` — for each entry, add its marketplace first (if not already known), then install the plugin:
+
+```
+/plugin marketplace add <marketplaceSource.repo-or-url from the entry>
+/plugin install <name>@<marketplace>
+```
+
+Repeat for every entry in the file. This reinstalls the *current* version from each marketplace — it does not restore a frozen old version, since marketplace plugins are meant to stay current (see `docs/superpowers/specs/2026-07-21-harness-capture-design.md`'s Plugin capture decision).
 
 ### A4. Configure settings.json
 
@@ -144,8 +174,38 @@ git clone git@github-work:Gavan-AI-Labs-LTD/gavanmanage.git ~/projects/work/gava
 git clone git@github-work:Gavan-AI-Labs-LTD/gavan-cicd.git ~/projects/work/gavan-cicd
 ```
 
-### A8. Set up gavan-cicd local env
+### A8. Set up gavanmanage against the michael schema (dev project — no local Docker)
 
+Michael no longer runs local Docker Supabase for `gavanmanage`. He develops directly against
+his own Postgres schema (`michael`) inside the shared dev project (`rmgkldfqlnaenanzjhnn`,
+dashboard name "GavanManage" — NOT production, which is the separate `ydznkrhjbojturkjwqun`
+project). Full design/rationale: `gavanmanage/docs/superpowers/plans/2026-07-02-per-developer-schema-phase1-plan.md`.
+
+```bash
+cd ~/projects/work/gavanmanage
+npm install   # picks up the `pg` devDependency used by db:bootstrap/db:sync
+
+cat > .env.local << EOF
+VITE_SUPABASE_URL="https://rmgkldfqlnaenanzjhnn.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="<anon/publishable key — Dashboard > Project Settings > API>"
+VITE_SUPABASE_SCHEMA="michael"
+EOF
+```
+
+Ask the user for the publishable key (Dashboard → Project Settings → API) — never hardcode it,
+never echo `SUPABASE_DB_URL` if they share it, write straight to the file.
+
+The `michael` schema should already exist on the dev project (created once during Phase 1). If
+this is a genuinely fresh schema (new machine does NOT mean re-bootstrap the schema — the schema
+lives in the database, not on disk):
+```bash
+export SUPABASE_DB_URL="<direct connection string, port 5432 — Dashboard > Project Settings > Database>"
+npm run db:bootstrap -- --schema=michael   # idempotent — safe to (re-)run
+```
+Otherwise just confirm it's reachable (see A9) and skip straight to `npm run dev`.
+
+For `gavan-cicd`'s own E2E suite (separate from the app's dev server), it still runs against
+local Docker Supabase — that's unrelated to `michael` and unchanged:
 ```bash
 cd ~/projects/work/gavanmanage
 supabase start
@@ -174,10 +234,18 @@ gh auth status
 ssh -T git@github-personal 2>&1 | grep "successfully authenticated"
 ssh -T git@github-work 2>&1 | grep "successfully authenticated"
 
-# Supabase local
-cd ~/projects/work/gavanmanage && supabase status
+# michael schema reachable on the real dev project (via PostgREST — no error means exposed correctly)
+curl -s "https://rmgkldfqlnaenanzjhnn.supabase.co/rest/v1/cases?select=id&limit=1" \
+  -H "apikey: <publishable key from .env.local>" \
+  -H "Authorization: Bearer <publishable key from .env.local>" \
+  -H "Accept-Profile: michael"
+# Expect: [] or rows — NOT a PGRST106 error (that means the schema isn't exposed on Data API settings)
 
-# E2E tests
+# gavanmanage dev server
+cd ~/projects/work/gavanmanage && npm run dev   # should serve on localhost:8080, Vite ready in <1s
+
+# gavan-cicd E2E suite (local Docker, unrelated to michael)
+cd ~/projects/work/gavanmanage && supabase status
 cd ~/projects/work/gavan-cicd && npx playwright test --reporter=list
 ```
 
@@ -279,11 +347,13 @@ This repo contains the full AI agent configuration for Gavan AI Labs development
 | `team/claude/` | Shared Claude Code config (CLAUDE.md, settings, hooks) |
 | `team/claude/CLAUDE.md` | Global Claude config — copied to `~/.claude/CLAUDE.md` |
 | `team/claude/work-project-CLAUDE.md` | Work project Claude config — copied to `~/projects/work/.claude/CLAUDE.md` |
-| `team/claude/hooks/` | Custom hook scripts (model routing, context guard, superpowers gate, caveman) |
+| `team/claude/hooks/` | Custom hook scripts (model routing, context guard, superpowers gate, caveman, shared task-record adapter) |
 | `team/claude/plugins/` | Local custom plugins |
 | `team/squad-manifest.md` | Dev squad roles, handoff flow, reviewer triggers — canonical source |
 | `team/mcp.json.template` | MCP server config template (fill in secrets on restore) |
 | `members/michael/` | Michael's personal memory + profile |
+| `members/michael/memory/global/`, `.../work/` | Global and work-bucket memory snapshots |
+| `members/michael/memory/projects/<escaped-cwd>/` | Per-project memory bucket snapshots (e.g. `gavanmanage`, `gavan-cicd`) — restored by A3's loop into `~/.claude/projects/<name>/memory/`. This is where most real day-to-day project knowledge lives; global/work buckets alone are not a full restore. |
 
 ## Keeping this repo up to date
 
