@@ -1,0 +1,2 @@
+- [agy-only directive for parity plan](feedback_agy_only_parity_plan.md) — no Claude subagents until revoked
+- [Headless parity POC status](project_headless_parity_poc_status.md) — all 12 tasks show done; verify tolerance-vs-exact concern + untracked files before declaring Task 12 truly closed

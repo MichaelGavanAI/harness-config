@@ -8,20 +8,24 @@ PROMPT=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin)
 
 CONTEXT=$(cat "$HOME/.claude/.session-context" 2>/dev/null || echo "none")
 
-# No journaling outside known contexts
-if [[ "$CONTEXT" == "none" ]]; then
-    exit 0
-fi
+# Per-project journal — derived from CWD the same way Claude Code slugs the dir
+# (every "/" and "." replaced with "-"). Available in EVERY context, incl. "none".
+PROJECT_SLUG=$(printf '%s' "$PWD" | sed 's/[/.]/-/g')
+PROJECT_JOURNAL="$HOME/.claude/projects/$PROJECT_SLUG/memory/journal.md"
 
-JOURNAL="$HOME/.claude/projects/$CONTEXT/memory/journal.md"
+# Build the list of journals in play for this session.
+JOURNALS="$PROJECT_JOURNAL"
+if [[ "$CONTEXT" != "none" ]]; then
+    JOURNALS="$HOME/.claude/projects/$CONTEXT/memory/journal.md and $PROJECT_JOURNAL"
+fi
 
 # /compact detected — must consolidate before compress runs
 if echo "$PROMPT" | grep -qiE '^\s*/compact'; then
-    MSG="MEMORY_SYNC_REQUIRED: /compact detected. Before compacting, you MUST consolidate memory journal. Steps: 1) Read $JOURNAL 2) Merge each entry into the relevant memory/*.md structured file 3) Clear journal.md entries (leave blank). Do this NOW as your first action."
+    MSG="MEMORY_SYNC_REQUIRED: /compact detected. Before compacting, you MUST consolidate memory journals ($JOURNALS). Steps: 1) Read each journal.md 2) Merge each entry into the relevant memory/*.md structured file in the SAME bucket 3) Clear that journal.md (leave blank). Do this NOW as your first action."
     echo "{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":$(echo "$MSG" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))')}}"
     exit 0
 fi
 
 # Backward-glance reminder — every turn
-MSG="MEMORY: If last response completed a meaningful task, append 1 line to $JOURNAL before responding. Format: [$(date '+%Y-%m-%d %H:%M')] <what done> — <decision/why>. Skip for Q&A, lookups, caveman toggles."
+MSG="MEMORY: If last response completed a meaningful task, append 1 line to the appropriate journal ($JOURNALS) before responding. Format: [$(date '+%Y-%m-%d %H:%M')] <what done> — <decision/why>. Skip for Q&A, lookups, caveman toggles."
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":$(echo "$MSG" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))')}}"

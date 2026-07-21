@@ -16,6 +16,12 @@ inject_dir() {
     echo "$out"
 }
 
+# Derive the per-project bucket dir name the same way Claude Code does:
+# take the absolute CWD and replace every "/" and "." with "-".
+# e.g. /home/korm85/projects/work/gavan-cicd -> -home-korm85-projects-work-gavan-cicd
+PROJECT_SLUG=$(printf '%s' "$PWD" | sed 's/[/.]/-/g')
+PROJECT_MEM="$CLAUDE_PROJECTS/$PROJECT_SLUG/memory"
+
 MEMORY_CONTENT=$(inject_dir "$GLOBAL_MEM" "global")
 
 if [[ "$PWD" == "$HOME/projects/work"* ]]; then
@@ -27,9 +33,12 @@ elif [[ "$PWD" == "$HOME/projects/personal"* ]]; then
     echo "personal" > "$HOME/.claude/.session-context"
     MEMORY_CONTENT+=$(inject_dir "$CLAUDE_PROJECTS/personal/memory" "personal")
 else
-    CONTEXT_LABEL="none (launched outside work/ or personal/ — only global memory loaded)"
+    CONTEXT_LABEL="none (launched outside work/ or personal/ — only global + per-project memory loaded)"
     echo "none" > "$HOME/.claude/.session-context"
 fi
+
+# Per-project memory bucket — loaded for EVERY cwd, independent of work/personal context.
+MEMORY_CONTENT+=$(inject_dir "$PROJECT_MEM" "project")
 
 MEMORY_CONTENT+=$'\n\n--- session-context ---\nCWD: '"$PWD"$'\nLoaded context: '"$CONTEXT_LABEL"
 
@@ -45,14 +54,23 @@ if [[ "$CONTEXT_LABEL" == "work" ]] && [[ -f "$HOME/.slack_token" ]]; then
     fi
 fi
 
-# Journal consolidation check — if journal.md has entries from a previous session,
-# inject instruction to consolidate before doing anything else
+# Journal consolidation check — if any journal.md has entries from a previous
+# session, inject instruction to consolidate before doing anything else.
+# Checks BOTH the shared work/personal bucket AND the per-project bucket.
 JOURNAL_NOTICE=""
+PENDING_JOURNALS=""
 if [[ "$CONTEXT_LABEL" == "work" || "$CONTEXT_LABEL" == "personal" ]]; then
-    JOURNAL_PATH="$CLAUDE_PROJECTS/$CONTEXT_LABEL/memory/journal.md"
-    if [[ -f "$JOURNAL_PATH" ]] && [[ -s "$JOURNAL_PATH" ]]; then
-        JOURNAL_NOTICE=$'\n\nMEMORY_CONSOLIDATE_ON_START: journal.md has unprocessed entries from a previous session. As your FIRST action (before responding to user), consolidate these entries into the relevant memory/*.md structured files, then clear journal.md.'
+    CTX_JOURNAL="$CLAUDE_PROJECTS/$CONTEXT_LABEL/memory/journal.md"
+    if [[ -f "$CTX_JOURNAL" ]] && [[ -s "$CTX_JOURNAL" ]]; then
+        PENDING_JOURNALS+=" $CTX_JOURNAL"
     fi
+fi
+PROJECT_JOURNAL="$PROJECT_MEM/journal.md"
+if [[ -f "$PROJECT_JOURNAL" ]] && [[ -s "$PROJECT_JOURNAL" ]]; then
+    PENDING_JOURNALS+=" $PROJECT_JOURNAL"
+fi
+if [[ -n "$PENDING_JOURNALS" ]]; then
+    JOURNAL_NOTICE=$'\n\nMEMORY_CONSOLIDATE_ON_START: these journal.md files have unprocessed entries from a previous session:'"$PENDING_JOURNALS"$'. As your FIRST action (before responding to user), consolidate each into the relevant memory/*.md structured files in the SAME bucket, then clear that journal.md.'
 fi
 
 if [[ -n "$MEMORY_CONTENT" ]]; then

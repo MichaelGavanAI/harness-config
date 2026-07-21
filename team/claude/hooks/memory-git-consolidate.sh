@@ -22,11 +22,16 @@ sys.exit(1)
 fi
 
 CONTEXT=$(cat "$HOME/.claude/.session-context" 2>/dev/null || echo "none")
-if [[ "$CONTEXT" == "none" ]]; then
-    exit 0
+
+# Per-project journal — derived from CWD the same way Claude Code slugs the dir
+# (every "/" and "." replaced with "-"). Available in EVERY context, incl. "none".
+PROJECT_SLUG=$(printf '%s' "$PWD" | sed 's/[/.]/-/g')
+PROJECT_JOURNAL="$HOME/.claude/projects/$PROJECT_SLUG/memory/journal.md"
+
+JOURNALS="$PROJECT_JOURNAL"
+if [[ "$CONTEXT" != "none" ]]; then
+    JOURNALS="$HOME/.claude/projects/$CONTEXT/memory/journal.md and $PROJECT_JOURNAL"
 fi
 
-JOURNAL="$HOME/.claude/projects/$CONTEXT/memory/journal.md"
-
-MSG="MEMORY_CONSOLIDATE: git push/merge detected. Consolidate $JOURNAL into memory/*.md structured files now, then clear journal entries."
+MSG="MEMORY_CONSOLIDATE: git push/merge detected. Consolidate these journals ($JOURNALS) into the memory/*.md structured files in their SAME bucket now, then clear the journal entries."
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$(echo "$MSG" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))')}}"
