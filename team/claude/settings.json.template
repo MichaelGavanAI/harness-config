@@ -27,6 +27,20 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "matcher": "manual",
+        "hooks": [
+          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 }
+        ]
+      },
+      {
+        "matcher": "auto",
+        "hooks": [
+          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "startup",
@@ -35,6 +49,11 @@
             "type": "command",
             "command": "${HOME}/.claude/hooks/global-session-start.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-session.sh",
+            "timeout": 8
           }
         ]
       },
@@ -45,6 +64,11 @@
             "type": "command",
             "command": "${HOME}/.claude/hooks/global-session-start.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-session.sh",
+            "timeout": 8
           }
         ]
       },
@@ -55,6 +79,11 @@
             "type": "command",
             "command": "${HOME}/.claude/hooks/global-session-start.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-session.sh",
+            "timeout": 8
           }
         ]
       },
@@ -76,6 +105,22 @@
             "type": "command",
             "command": "${HOME}/.claude/hooks/memory-git-consolidate.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-post.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-stop.sh",
+            "timeout": 5
           }
         ]
       }
@@ -88,6 +133,16 @@
             "command": "${HOME}/.claude/hooks/memory-journal.sh",
             "timeout": 5,
             "statusMessage": "Checking memory journal..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-prompt.sh",
+            "timeout": 5,
+            "statusMessage": "Checking task record..."
           }
         ]
       },
