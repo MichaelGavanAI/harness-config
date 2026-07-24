@@ -50,6 +50,17 @@ Consolidation steps: read journal entries → update relevant `memory/*.md` file
 - `memory/feedback_*.md` — decisions, preferences, lessons learned
 - `memory/reference_*.md` — where to find things (repos, boards, dashboards)
 
+## Shared Task Record
+
+Separate from the private journal/memory system above. A sanitized, cross-agent record lives at `docs/agent-workflow/` in the repo you're working in (or the path named by a `.agent-workflow-location` marker file, for repos that must not commit task history). Schema and privacy rules: `docs/agent-workflow/CONTRACT.md`.
+
+- **Read first:** `active-task.md` is injected into context at SessionStart/resume/compact. If it names an active task, continue it — do not ask the user to re-explain state.
+- **Never hand-edit** `task.json`, `events.jsonl`, or `active-task.md`. Always go through `python3 ~/.claude/hooks/task_record.py <subcommand>` (`init-task`, `set-task`, `append-event`, `finalize`, `resolve`, `read-active`, `doctor`) — it handles locking, atomic writes, and privacy rejection.
+- **Record material events only** — assessment, decision, plan change, implementation milestone, verification, review finding, blocker, recovery, product decision request, final outcome. Not routine reads or every tool call.
+- **Never put in the shared record:** raw user prompts or model reasoning, secrets/tokens/credentials/connection strings, patient names/identifiers/photos/clinical records, or raw terminal/tool output. Evidence is a test name, commit hash, PR/CI URL, or safe file path only.
+- **Coexists with, does not replace,** the private journal/memory consolidation flow above — keep writing journal entries as before.
+- **Health check:** `~/.claude/hooks/task-record-doctor.sh` (run manually from inside a repo) reports contract version, task resolution, staleness, privacy self-test, and hook wiring.
+
 ## Superpowers Hard Gate — Non-Negotiable Sequence
 
 For ANY new feature or project, this exact sequence is MANDATORY. No step can be skipped for any reason:
