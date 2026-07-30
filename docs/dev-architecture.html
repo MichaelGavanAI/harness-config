@@ -37,6 +37,7 @@ html,body{height:100%;overflow:hidden;background:#080d13;color:#cdd6e0;font-fami
 .instr{background:#280c20;border-color:#7a2a5a;color:#e879a0}
 .hook {background:#271208;border-color:#7a3610;color:#e07840}
 .mem  {background:#082420;border-color:#0f6050;color:#2dcaa8}
+.vrfy {background:#0a2030;border-color:#1a5f7a;color:#4ac8e8}
 
 #arrows{position:absolute;top:0;left:0;width:1300px;height:680px;pointer-events:none}
 
@@ -69,6 +70,7 @@ html,body{height:100%;overflow:hidden;background:#080d13;color:#cdd6e0;font-fami
     <div class="li"><div class="ld" style="background:#7a2a5a"></div>Instructions</div>
     <div class="li"><div class="ld" style="background:#7a3610"></div>Hooks</div>
     <div class="li"><div class="ld" style="background:#0f6050"></div>Memory</div>
+    <div class="li"><div class="ld" style="background:#1a5f7a"></div>Verification</div>
   </div>
   <div class="zoom-ctrls">
     <div class="zbtn" id="zin"  title="Zoom in">+</div>
@@ -116,6 +118,10 @@ html,body{height:100%;overflow:hidden;background:#080d13;color:#cdd6e0;font-fami
   <div class="node mem"   id="n-jrnmd"   style="left:650px;top:418px;width:115px">journal.md</div>
   <div class="node mem"   id="n-memidx"  style="left:782px;top:418px;width:115px">MEMORY.md</div>
   <div class="node mem"   id="n-projmem" style="left:912px;top:418px;width:178px">project_*.md / feedback_*.md</div>
+
+  <!-- Claude: Verification Layer -->
+  <div class="section-title" style="left:596px;top:508px;font-size:9px">Verification Layer — advisory, non-blocking</div>
+  <div class="node vrfy"  id="n-agy"     style="left:680px;top:526px;width:240px">agy (Gemini Flash/Pro)</div>
 
   <svg id="arrows"></svg>
 </div>
@@ -191,6 +197,9 @@ var INFO = {
   'n-memidx': {cat:'Memory',col:'#0f6050',
     desc:'Index of all memory files. Injected every session. One-liner per file.',
     content:'# MEMORY.md (index)\nPath: ~/.claude/projects/work/memory/MEMORY.md\n\nOne-liner per memory file:\n\n- project_gavan_ai_labs.md\n  dental AI startup, team, beta Sep/Oct 2026\n- reference_cicd_policy.md\n  branch flow, hooks, WORKFLOW.md pointer\n- reference_repo_paths.md\n  local clone paths for all repos\n- feedback_git_push_confirm.md\n  always confirm before push\n- feedback_autonomous_decisions.md\n  auto-decide on branch splits'},
+  'n-agy': {cat:'Verification Layer',col:'#1a5f7a',
+    desc:'Cross-model advisory verification via agy CLI. Routes spec/plan/code/UX/release reviews to Gemini (Flash/Pro). Non-blocking — silently skipped if unavailable (quota, network, timeout). Escalates reviewer to Opus on [SECURITY]/[PII]/[PATIENT] flags.',
+    content:'# agy (Antigravity CLI) — Verification Layer\n\nNon-blocking advisory layer. Five gates:\n  Spec, Plan, Code, UX, Release\n\nPattern (always exits 0):\n  OUTPUT=$(timeout 30 agy -p "$PROMPT" 2>/dev/null) || true\n  [ -n "$OUTPUT" ] && echo "$OUTPUT"\n  grep -qiE \'\\[SECURITY\\]|\\[PII\\]|\\[PATIENT\' → escalate to Opus\n\nGates:\n  Spec:    agy -p "Review spec for edge cases, PII risks..."\n  Plan:    agy -p "Review plan for ordering, missing contracts..."\n  Code:    agy -p "Adversarially review diff for bugs, PII..."\n  UX:      agy -p "Review component for a11y, design system..."\n  Release: agy -p "Final adversarial review for security..."\n\nPre-push: fires automatically via pre-push hook\n  (gavan-cicd/hooks/pre-push step 5)\n\nEscalation: [SECURITY]/[PII]/[PATIENT] in output\n  → task-reviewer escalates to Opus'},
   'n-projmem': {cat:'Memory',col:'#0f6050',
     desc:'Structured memory: project state, behavioral rules, references.',
     content:'# project_*.md / feedback_*.md / reference_*.md\n\nproject_*.md — state + decisions\n  project_gavan_ai_labs.md:\n    guided tour state, CI migration history,\n    branch reconciliation events\n\nfeedback_*.md — behavioral rules\n  feedback_git_push_confirm.md:\n    always confirm before commit+push\n  feedback_autonomous_decisions.md:\n    auto-decide on branch splits\n\nreference_*.md — where things live\n  reference_cicd_policy.md,\n  reference_repo_paths.md'}
@@ -204,7 +213,8 @@ var NR={
   'n-cg':{x:596,y:72,w:148,h:34},'n-cw':{x:758,y:72,w:162,h:34},'n-cr':{x:934,y:72,w:168,h:34},
   'n-settings':{x:742,y:192,w:158,h:34},
   'n-sess':{x:596,y:280,w:158,h:34},'n-jrnhook':{x:770,y:280,w:148,h:34},'n-gitcons':{x:932,y:280,w:162,h:34},
-  'n-jrnmd':{x:650,y:418,w:115,h:34},'n-memidx':{x:782,y:418,w:115,h:34},'n-projmem':{x:912,y:418,w:178,h:34}
+  'n-jrnmd':{x:650,y:418,w:115,h:34},'n-memidx':{x:782,y:418,w:115,h:34},'n-projmem':{x:912,y:418,w:178,h:34},
+  'n-agy':{x:680,y:526,w:240,h:34}
 };
 
 var EDGES=[
@@ -225,7 +235,9 @@ var EDGES=[
   {f:'n-jrnhook',t:'n-jrnmd',lbl:'writes',col:'#0f6050'},
   {f:'n-gitcons',t:'n-jrnmd',lbl:'',col:'#0f6050'},
   {f:'n-jrnmd',t:'n-projmem',lbl:'',col:'#0f6050'},
-  {f:'n-main',t:'n-gitcons',lbl:'push fires hook',col:'#7a3610',dashed:true}
+  {f:'n-main',t:'n-gitcons',lbl:'push fires hook',col:'#7a3610',dashed:true},
+  {f:'n-feat',t:'n-agy',lbl:'pre-push advisory',col:'#1a5f7a',dashed:true},
+  {f:'n-cg',t:'n-agy',lbl:'gates',col:'#1a5f7a',dashed:true}
 ];
 
 // Draw arrows
