@@ -1,22 +1,11 @@
 #!/usr/bin/env node
-// model-routing-reminder.js — UserPromptSubmit hook
-// Re-injects subagent model routing table every turn to prevent drift.
-
-let input = '';
-process.stdin.on('data', chunk => { input += chunk; });
-process.stdin.on('end', () => {
-  try {
-    process.stdout.write(JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "UserPromptSubmit",
-        additionalContext: "SUBAGENT MODEL ROUTING (enforce always when spawning Agent tool): " +
-          "Search/read/grep/glob → claude-haiku-4-5-20251001. " +
-          "Code writing/editing (default) → claude-sonnet-4-6. " +
-          "Architecture/planning/design → claude-opus-4-8. " +
-          "Always pass explicit model ID. Never use wrong tier."
-      }
-    }));
-  } catch (e) {
-    // Silent fail
-  }
-});
+// DEPRECATED — no-op, kept so existing settings.json registrations don't error.
+//
+// This hook re-injected the subagent routing table on every UserPromptSubmit.
+// agent-model-verifier.js already enforces routing by DENYING an Agent call
+// with a bad model, which is deterministic; restating the rule each turn added
+// tokens without adding enforcement. The routing table lives in CLAUDE.md.
+// Remove this from settings.json when convenient.
+process.stdin.resume();
+process.stdin.on('data', () => {});
+process.stdin.on('end', () => process.exit(0));

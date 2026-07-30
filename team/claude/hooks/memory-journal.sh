@@ -26,6 +26,7 @@ if echo "$PROMPT" | grep -qiE '^\s*/compact'; then
     exit 0
 fi
 
-# Backward-glance reminder — every turn
-MSG="MEMORY: If last response completed a meaningful task, append 1 line to the appropriate journal ($JOURNALS) before responding. Format: [$(date '+%Y-%m-%d %H:%M')] <what done> — <decision/why>. Skip for Q&A, lookups, caveman toggles."
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":$(echo "$MSG" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))')}}"
+# No per-turn reminder. The journal rule lives in CLAUDE.md (read once, cached)
+# rather than being re-injected every turn — repetition cost tokens without
+# improving compliance. This hook now only fires on the /compact branch above.
+exit 0

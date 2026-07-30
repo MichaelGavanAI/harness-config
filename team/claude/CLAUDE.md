@@ -10,7 +10,14 @@ Every response MUST begin with [Model: Haiku], [Model: Sonnet], or [Model: Opus]
 | Code writing / editing (default) | Sonnet |
 | Architecture / planning / design | Opus |
 
-Model IDs: haiku=claude-haiku-4-5-20251001, sonnet=claude-sonnet-4-6, opus=claude-opus-4-8
+Pass the Agent tool's `model` alias, not a full model ID: `haiku`, `sonnet`, `opus` (also `fable` for the top-capability tier). Aliases resolve to the current generation and don't rot when Anthropic ships a new model.
+
+## When to Spawn a Subagent
+Spawn when the work would dump large output into main context (multi-file grep, cross-repo search, reading many files to answer one question), or when 2+ tasks are genuinely independent and can run in parallel.
+
+Work inline when it's a handful of tool calls, a single known file, or a sequential chain where each step needs the previous result.
+
+Never spawn a subagent to verify or review your own work in the same turn — verification belongs in the main loop.
 
 ## Agent Announcements
 Before every Agent call output: "Spawning [type] on [Model] — [task]"

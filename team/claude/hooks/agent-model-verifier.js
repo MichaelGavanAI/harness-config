@@ -3,12 +3,19 @@
 // Blocks Agent calls that omit model param or use an unrecognized model ID.
 
 const VALID_MODELS = new Set([
-  'claude-haiku-4-5-20251001',
-  'claude-sonnet-4-6',
-  'claude-opus-4-8',
+  // Aliases are the supported Agent-tool values; they track the current generation.
   'haiku',
   'sonnet',
   'opus',
+  'fable',
+  // Full IDs accepted for compatibility.
+  'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5',
+  'claude-sonnet-5',
+  'claude-opus-5',
+  'claude-fable-5',
+  'claude-sonnet-4-6',
+  'claude-opus-4-8',
 ]);
 
 let input = '';
@@ -39,7 +46,7 @@ process.stdin.on('end', () => {
           permissionDecision: "deny",
           permissionDecisionReason:
             "Agent model '" + model + "' not in approved list. " +
-            "Use: claude-haiku-4-5-20251001, claude-sonnet-4-6, or claude-opus-4-8."
+            "Use an alias: haiku, sonnet, opus, or fable."
         }
       }));
       return;
