@@ -7,11 +7,14 @@ This is the shared, project-facing source of truth for an in-flight feature. Age
 
 ## Location
 
-Each repository adopting this contract stores its task records here:
+`CONTRACT.md` is copied or linked into `docs/agent-workflow/` in each repository adopting this
+contract, from this canonical version.
+
+Task records themselves live **outside** the tracked working tree, under the repository's shared
+`.git` (`git rev-parse --git-common-dir`), keyed by which worktree is calling:
 
 ```text
-docs/agent-workflow/
-  CONTRACT.md
+<git-common-dir>/agent-workflow/<worktree-slug>/
   active-task.md
   tasks/<task-id>/
     task.json
@@ -19,7 +22,21 @@ docs/agent-workflow/
     retrospective.md
 ```
 
-`CONTRACT.md` is copied or linked from this canonical version. A repository may keep task artifacts in an ignored local equivalent only when committing them would be inappropriate; its `AGENTS.md` and Claude project instructions must then name the local location exactly.
+**Why not inside the repo:** a task record committed into the working tree diverges per branch —
+each `git worktree` checkout only ever sees whatever was last committed to *its own* branch
+history, not live state, and a repo run with many parallel worktrees (this org's normal pattern)
+ends up with as many stale, disagreeing copies as it has worktrees. Storing under the shared
+`.git` instead means every worktree of one repo sees the same physical location, live, never
+committed, never merged.
+
+**Per-worktree isolation:** `<worktree-slug>` is a filesystem-safe encoding of the calling
+worktree's own `git rev-parse --show-toplevel`, so two worktrees of the same repo never contend
+over one "active task" — each gets its own lineage. There is currently no cross-worktree "list all
+active tasks" view; an agent only sees the task for the worktree it is actually running in.
+
+Repos on an older layout may still have historical, already-committed records under
+`docs/agent-workflow/tasks/` in the tracked tree — left as read-only history, never written to
+again once an adapter has moved to the git-common-dir location above.
 
 ## Privacy and safety
 

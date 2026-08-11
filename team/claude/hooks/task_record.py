@@ -73,6 +73,29 @@ def git_root():
         return None
 
 
+def git_common_dir():
+    """The single .git shared by every worktree of a repo — unlike --show-toplevel, this path
+    is identical whether called from the main checkout or any `git worktree add` checkout, so
+    it's the only place a ledger can live and be visible from every worktree at once without
+    being committed (see worktree_slug for how per-worktree isolation is layered on top)."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            capture_output=True, text=True, timeout=5, check=True,
+        )
+        path = out.stdout.strip()
+        return path if os.path.isabs(path) else os.path.abspath(path)
+    except Exception:
+        return None
+
+
+def worktree_slug(root):
+    """A filesystem-safe name for `root` (the calling worktree's own --show-toplevel), so each
+    worktree gets its own task lineage under the shared git-common-dir ledger instead of every
+    worktree fighting over one global 'active task'."""
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", root.strip("/")) or "root"
+
+
 def task_root(root=None):
     root = root or git_root()
     if not root:
@@ -85,6 +108,13 @@ def task_root(root=None):
                 return os.path.join(root, rel)
         except Exception:
             pass
+    common = git_common_dir()
+    if common:
+        # Ledger lives under the shared .git, keyed by which worktree's toplevel is calling, so
+        # it (a) is never committed/never diverges per-branch and (b) doesn't collide across the
+        # many parallel worktrees this repo runs. `docs/agent-workflow/` inside the tracked
+        # working tree is kept as read-only history from before this fix - never written again.
+        return os.path.join(common, "agent-workflow", worktree_slug(root))
     return os.path.join(root, "docs", "agent-workflow")
 
 
@@ -186,6 +216,7 @@ def render_active_md(data):
         f"**Goal:** {data.get('goal', '')}",
         f"**Status:** {data.get('status', '')}",
         f"**Phase:** {data.get('phase', '')}",
+        f"**Worktree:** {data.get('worktree', 'not yet decided')}",
         "",
         "**Spec refs:** " + ", ".join(data.get("spec_refs", []) or ["(none)"]),
         "**Plan refs:** " + ", ".join(data.get("plan_refs", []) or ["(none)"]),
@@ -230,9 +261,13 @@ def cmd_resolve(args):
         return
     base = task_root(root)
     active = find_active_task(base)
+    # `task_dir` is absolute, not root-relative: since the fix moving storage under
+    # --git-common-dir, the ledger lives outside the working tree (see task_root), so a path
+    # relative to `root` would walk out through ".." and any caller joining it back onto
+    # `root` (as the old Stop hook script did) would silently resolve to the wrong place.
     print(json.dumps({
         "git_root": root,
-        "task_dir": os.path.relpath(base, root),
+        "task_dir": base,
         "active_task_id": active.get("task_id") if active else None,
     }))
 
@@ -313,6 +348,12 @@ def cmd_set_task(args):
         raise RejectError("rejected: invalid status")
     if "phase" in patch and patch["phase"] not in ALLOWED_PHASE:
         raise RejectError("rejected: invalid phase")
+    if "worktree" in patch:
+        wt = patch["worktree"]
+        if not isinstance(wt, str) or not wt:
+            raise RejectError("rejected: worktree must be a non-empty string (absolute path or \"none\")")
+        if wt != "none" and not wt.startswith("/"):
+            raise RejectError("rejected: worktree must be an absolute path or the literal string \"none\"")
 
     root = git_root()
     if not root:

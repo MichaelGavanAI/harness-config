@@ -18,12 +18,19 @@ TASK_DIR=$(echo "$RESOLVED" | python3 -c "import sys,json; print(json.load(sys.s
 
 [[ -n "$TASK_ID" && -n "$GIT_ROOT" ]] || exit 0
 
-TASK_JSON="$GIT_ROOT/$TASK_DIR/tasks/$TASK_ID/task.json"
+# TASK_DIR is absolute (see task_record.py cmd_resolve) since the ledger now lives under
+# --git-common-dir, outside the working tree GIT_ROOT points at — do not join it onto GIT_ROOT.
+TASK_JSON="$TASK_DIR/tasks/$TASK_ID/task.json"
 [[ -f "$TASK_JSON" ]] || exit 0
 
 if [[ "$TASK_JSON" -nt "$MARKER" ]]; then
     MSG="TASK RECORD: task state changed this turn — confirm active-task.md and events.jsonl are current before ending."
     echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$(printf '%s' "$MSG" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')}}" 2>/dev/null || true
 fi
+
+# Reset the baseline to now so this only re-fires on genuinely NEW changes since this
+# Stop, not forever after the first change of the session (the marker is otherwise only
+# touched once, at SessionStart).
+touch "$MARKER" 2>/dev/null || true
 
 exit 0
