@@ -6,12 +6,27 @@ GLOBAL_MEM="$CLAUDE_PROJECTS/global/memory"
 BASE="GLOBAL: Start every response with [Model: Haiku/Sonnet/Opus]. Route subagents: Haiku=search/reads, Sonnet=code (default), Opus=architecture. Announce every Agent spawn."
 
 inject_dir() {
-    local dir="$1" label="$2" out=""
+    local dir="$1" label="$2" out="" base="" status=""
     [[ -d "$dir" ]] || return
     for f in "$dir"/*.md; do
         [[ -f "$f" ]] || continue
-        [[ "$(basename "$f")" == "MEMORY.md" ]] && continue  # index only, skip
-        out+=$'\n\n--- '"$label/$(basename "$f")"$' ---\n'"$(cat "$f")"
+        base="$(basename "$f")"
+        [[ "$base" == "MEMORY.md" ]] && continue  # index only, skip
+
+        # Archival policy: project_*.md files carrying a terminal status
+        # (archived/resolved/shipped/merged) in their frontmatter move to
+        # archive/ and drop out of injection. feedback_*/reference_* never
+        # auto-archive — those stay load-bearing indefinitely.
+        if [[ "$base" == project_* ]]; then
+            status=$(sed -n '1,10p' "$f" | grep -Eom1 '^[[:space:]]*status:[[:space:]]*(archived|resolved|shipped|merged)' | awk '{print $NF}')
+            if [[ -n "$status" ]]; then
+                mkdir -p "$dir/archive"
+                mv "$f" "$dir/archive/$base"
+                continue
+            fi
+        fi
+
+        out+=$'\n\n--- '"$label/$base"$' ---\n'"$(cat "$f")"
     done
     echo "$out"
 }

@@ -14,7 +14,7 @@
 - [Shade/material UX findings 2026-07-06](project_shade_material_ux_findings.md) — 7 code-verified findings on shade/material pipeline; doc + 2 artifact URLs
 - [Verify before reporting](feedback_verify_before_reporting.md) — grep/read code before asserting domain claims; Michael checks and pushes back
 - [Todo impact wording](feedback_todo_impact_wording.md) — todo items = product impact not code steps; Coding splits into Product vs Infra & Routine
-- [Lab nav redesign](project_lab_nav_redesign.md) — persistent sidebar shipped on feat/lab-navigation-redesign; real cross-task bugs caught in final review; T023/T024 beta-critical perf bugs found along the way
+- [Lab nav redesign](archive/project_lab_nav_redesign.md) — ARCHIVED (shipped): persistent sidebar on feat/lab-navigation-redesign; real cross-task bugs caught in final review; T023/T024 beta-critical perf bugs found along the way
 - [Supabase dev env](reference_supabase_dev_env.md) — .env.local already wired to Michael's "michael" dev schema; tell agents directly, don't let them hunt
 - [UI preview before implementation](feedback_ui_preview_before_implementation.md) — show rendered preview/screenshot before full build on layout-level UI changes, not just a code diff
 - [App terms, not code](feedback_app_terms_not_code.md) — explain in screen/button names Michael+Haim see; code is Roy's/Claude's territory, keep it out of user-facing text- [UI/UX scope only](feedback_ui_ux_scope_only.md) — no schema/MA/infra changes unless asked; surface server-side parts as questions, dont ship as "completeness"

@@ -4,7 +4,9 @@ description: Lab navigation redesign (persistent sidebar) — full spec-to-imple
 metadata: 
   node_type: memory
   type: project
+  status: shipped
   originSessionId: e6ef3db3-1d8b-4431-9a7a-bcdf3fa1997f
+  modified: 2026-08-12T10:00:30.397Z
 ---
 
 Follow-up to [[project_shade_material_ux_findings]]. The "persistent nav" idea from that UX audit got its own full brainstorm → spec → plan → subagent-driven implementation cycle on 2026-07-06, branch `feat/lab-navigation-redesign`.
