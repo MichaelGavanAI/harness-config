@@ -27,28 +27,57 @@ report() {
 }
 
 sync_memory() {
-  local repo_dir="$REPO_ROOT/members/michael/memory/projects"
-  mkdir -p "$repo_dir"
-  for proj_dir in "$LIVE_CLAUDE"/projects/-home-korm85-projects-*/; do
-    [ -d "${proj_dir}memory" ] || continue
-    local proj_name
-    proj_name=$(basename "$proj_dir")
-    local repo_proj_dir="$repo_dir/$proj_name"
-    mkdir -p "$repo_proj_dir"
-    for f in "${proj_dir}memory"/*.md; do
+  # Live per-project buckets are keyed by escaped-cwd (e.g. -home-mishka-Projects-Work-gavanmanage)
+  # and vary by machine username/path casing — never hardcode a machine's own username/path here.
+  # Discover buckets dynamically instead: any $LIVE_CLAUDE/projects/*/memory dir is in scope.
+  # global/work/personal are shared buckets (not per-project) and map to a flat repo dir instead
+  # of members/michael/memory/projects/<bucket>.
+  local proj_repo_dir="$REPO_ROOT/members/michael/memory/projects"
+  mkdir -p "$proj_repo_dir"
+
+  for bucket_dir in "$LIVE_CLAUDE"/projects/*/; do
+    [ -d "${bucket_dir}memory" ] || continue
+    local bucket_name repo_dest
+    bucket_name=$(basename "$bucket_dir")
+    case "$bucket_name" in
+      global|work|personal)
+        repo_dest="$REPO_ROOT/members/michael/memory/$bucket_name"
+        ;;
+      -*)
+        repo_dest="$proj_repo_dir/$bucket_name"
+        ;;
+      *)
+        continue
+        ;;
+    esac
+    mkdir -p "$repo_dest"
+    for f in "${bucket_dir}memory"/*.md; do
       [ -f "$f" ] || continue
       local bn repo_f
       bn=$(basename "$f")
-      repo_f="$repo_proj_dir/$bn"
+      repo_f="$repo_dest/$bn"
       if [ ! -f "$repo_f" ]; then
-        report "memory" "missing-in-repo" "$proj_name/$bn"
+        report "memory" "missing-in-repo" "$bucket_name/$bn"
         [ "$MODE" = "apply" ] && cp "$f" "$repo_f"
       elif ! diff -q "$f" "$repo_f" >/dev/null 2>&1; then
-        report "memory" "changed" "$proj_name/$bn"
+        report "memory" "changed" "$bucket_name/$bn"
         [ "$MODE" = "apply" ] && cp "$f" "$repo_f"
       fi
     done
   done
+}
+
+sync_claude_md() {
+  local live_file="$LIVE_CLAUDE/CLAUDE.md"
+  local repo_file="$REPO_ROOT/team/claude/CLAUDE.md"
+  [ -f "$live_file" ] || return 0
+  if [ ! -f "$repo_file" ]; then
+    report "claude-md" "missing-in-repo" "CLAUDE.md"
+    [ "$MODE" = "apply" ] && cp "$live_file" "$repo_file"
+  elif ! diff -q "$live_file" "$repo_file" >/dev/null 2>&1; then
+    report "claude-md" "changed" "CLAUDE.md"
+    [ "$MODE" = "apply" ] && cp "$live_file" "$repo_file"
+  fi
 }
 
 sync_hooks() {
@@ -172,6 +201,7 @@ PYEOF
 
 echo "=== harness-sync.sh $MODE ==="
 sync_memory
+sync_claude_md
 sync_hooks
 sync_skills
 sync_settings
@@ -182,6 +212,6 @@ if [ "$DRIFT_FOUND" -eq 0 ]; then
   echo "Clean — no drift found."
 elif [ "$MODE" = "check" ]; then
   echo ""
-  echo "Run 'harness-sync.sh apply' to copy over memory/hooks/skills/plugins drift."
+  echo "Run 'harness-sync.sh apply' to copy over memory/CLAUDE.md/hooks/skills/plugins drift."
   echo "settings/mcp drift above needs a manual look — never auto-copied (secrets)."
 fi

@@ -4,8 +4,8 @@
     "marketplace": "marcosnahuel-antigravity",
     "scope": "user",
     "marketplaceSource": {
-      "source": "git",
-      "url": "https://github.com/MarcosNahuel/antigravity-plugin-cc.git"
+      "source": "github",
+      "repo": "MarcosNahuel/antigravity-plugin-cc"
     }
   },
   {
@@ -15,15 +15,6 @@
     "marketplaceSource": {
       "source": "github",
       "repo": "JuliusBrussee/caveman"
-    }
-  },
-  {
-    "name": "cloudflare",
-    "marketplace": "claude-plugins-official",
-    "scope": "project",
-    "marketplaceSource": {
-      "source": "github",
-      "repo": "anthropics/claude-plugins-official"
     }
   },
   {
@@ -45,23 +36,6 @@
     }
   },
   {
-    "name": "postman",
-    "marketplace": "claude-plugins-official",
-    "scope": "local",
-    "marketplaceSource": {
-      "source": "github",
-      "repo": "anthropics/claude-plugins-official"
-    }
-  },
-  {
-    "name": "push-to-git",
-    "marketplace": "user",
-    "scope": "user",
-    "marketplaceSource": {
-      "source": "unknown"
-    }
-  },
-  {
     "name": "skill-creator",
     "marketplace": "claude-plugins-official",
     "scope": "user",
@@ -74,15 +48,6 @@
     "name": "slack",
     "marketplace": "claude-plugins-official",
     "scope": "user",
-    "marketplaceSource": {
-      "source": "github",
-      "repo": "anthropics/claude-plugins-official"
-    }
-  },
-  {
-    "name": "supabase",
-    "marketplace": "claude-plugins-official",
-    "scope": "project",
     "marketplaceSource": {
       "source": "github",
       "repo": "anthropics/claude-plugins-official"

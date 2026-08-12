@@ -25,6 +25,51 @@
             "statusMessage": "Verifying agent model..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/destructive-bash-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for destructive commands..."
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/worktree-cleanup-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Checking worktree cleanliness..."
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/todos-policy-injector.sh",
+            "timeout": 8,
+            "statusMessage": "Checking todos repo policy..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/worktree-task-bind.sh",
+            "timeout": 5,
+            "statusMessage": "Checking worktree task binding..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/worktree-mismatch-check.sh",
+            "timeout": 5,
+            "statusMessage": "Checking worktree match..."
+          }
+        ]
       }
     ],
     "PreCompact": [

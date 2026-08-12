@@ -24,11 +24,16 @@ PROJECT_MEM="$CLAUDE_PROJECTS/$PROJECT_SLUG/memory"
 
 MEMORY_CONTENT=$(inject_dir "$GLOBAL_MEM" "global")
 
-if [[ "$PWD" == "$HOME/projects/work"* ]]; then
+PWD_LOWER=$(printf '%s' "$PWD" | tr '[:upper:]' '[:lower:]')
+WORK_SUFFIX="/projects/work"
+if [[ "$PWD_LOWER" == "$HOME/projects/work"* ]]; then
     CONTEXT_LABEL="work"
     echo "work" > "$HOME/.claude/.session-context"
     MEMORY_CONTENT+=$(inject_dir "$CLAUDE_PROJECTS/work/memory" "work")
-elif [[ "$PWD" == "$HOME/projects/personal"* ]]; then
+    # Preserve this machine's actual on-disk casing (e.g. ~/Projects/Work vs ~/projects/work)
+    # for paths derived below, rather than assuming lowercase.
+    WORK_ROOT="${PWD:0:$((${#HOME} + ${#WORK_SUFFIX}))}"
+elif [[ "$PWD_LOWER" == "$HOME/projects/personal"* ]]; then
     CONTEXT_LABEL="personal"
     echo "personal" > "$HOME/.claude/.session-context"
     MEMORY_CONTENT+=$(inject_dir "$CLAUDE_PROJECTS/personal/memory" "personal")
@@ -44,10 +49,10 @@ MEMORY_CONTENT+=$'\n\n--- session-context ---\nCWD: '"$PWD"$'\nLoaded context: '
 
 # Slack digest — run fetch if work context and token exists
 if [[ "$CONTEXT_LABEL" == "work" ]] && [[ -f "$HOME/.slack_token" ]]; then
-    DIGEST_PATH="$HOME/projects/work/slack-digest.md"
+    DIGEST_PATH="$WORK_ROOT/slack-digest.md"
     # Refresh if older than 30 minutes or missing
     if [[ ! -f "$DIGEST_PATH" ]] || [[ $(find "$DIGEST_PATH" -mmin +30 2>/dev/null | wc -l) -gt 0 ]]; then
-        bash "$HOME/projects/work/slack-fetch.sh" >/dev/null 2>&1 || true
+        bash "$WORK_ROOT/slack-fetch.sh" >/dev/null 2>&1 || true
     fi
     if [[ -f "$DIGEST_PATH" ]]; then
         MEMORY_CONTENT+=$'\n\n--- slack-digest ---\n'"$(cat "$DIGEST_PATH")"
