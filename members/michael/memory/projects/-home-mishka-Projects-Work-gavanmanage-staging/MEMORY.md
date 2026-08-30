@@ -1,0 +1,11 @@
+- [Material Advisor wizard gap-fix task status](project_material_advisor_wizard_gaps.md) — T-20260813-001/T-20260819-002, PR #307 open, multiple bug-class rounds fixed & pushed, not yet merged
+- [Material Advisor wizard mock redesign](project_material_advisor_wizard_redesign.md) — narrowing-funnel mock done; residual gap: coping list too narrow for monolithic masking
+- [Check both staging AND remote-branch divergence before push](feedback_git_branch_divergence_before_push.md) — never assume "no upstream" means safe to push
+- [Cost-conscious subagent model choice](feedback_cost_conscious_subagent_model_choice.md) — drop opus to sonnet once a fix pattern repeats; don't wait to be asked
+- [CI pinned-ref gotcha](feedback_ci_pinned_ref_gotcha.md) — gavan-cicd checked out at pinned SHA in e2e.yml; a test fix there does nothing until that SHA is bumped too
+- [e2e.yml has no timeout-minutes](project_e2e_workflow_no_timeout_gap.md) — a hung install step can silently block a PR for hours
+- [Adversarial review before large clinical diffs](feedback_adversarial_review_before_large_clinical_diffs.md) — passing tests didn't catch a real safety regression; independent review agent did
+- [Build exhaustive repro before first push](feedback_build_exhaustive_repro_before_first_push.md) — for multi-step flows, write the walk-every-path test before push #1, not after CI failure #2
+- [Material Advisor confirmed-page redesign](project_material_advisor_confirmed_page_redesign.md) — pushed to fix/material-advisor-ux (commit fc07c21), not yet PR'd/merged
+- [MA copy and signal conventions](feedback_ma_copy_and_signal_conventions.md) — no invented fallback text, use sentence library; no em dashes; short chip text, full sentence in tooltip only
+- [Chat dock UI + live restoration preview](project_chat_v1_dock_and_live_preview.md) — fix/chat-dock-ui pushed (922c1eb), not yet PR'd; live 3D viewer replaces AI preview image

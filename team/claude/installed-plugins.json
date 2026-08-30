@@ -4,8 +4,8 @@
     "marketplace": "marcosnahuel-antigravity",
     "scope": "user",
     "marketplaceSource": {
-      "source": "github",
-      "repo": "MarcosNahuel/antigravity-plugin-cc"
+      "source": "git",
+      "url": "https://github.com/MarcosNahuel/antigravity-plugin-cc.git"
     }
   },
   {

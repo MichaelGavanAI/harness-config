@@ -93,6 +93,14 @@ if [[ -n "$PENDING_JOURNALS" ]]; then
     JOURNAL_NOTICE=$'\n\nMEMORY_CONSOLIDATE_ON_START: these journal.md files have unprocessed entries from a previous session:'"$PENDING_JOURNALS"$'. As your FIRST action (before responding to user), consolidate each into the relevant memory/*.md structured files in the SAME bucket, then clear that journal.md.'
 fi
 
+# Cross-harness handoff check
+HANDOFF_FILE="$PWD/.harness/active-handoff.json"
+if [[ -f "$HANDOFF_FILE" ]]; then
+    MEMORY_CONTENT+=$"\n\n--- cross-harness-handoff ---\nACTIVE HANDOFF FROM ANTIGRAVITY DETECTED:\n"
+    MEMORY_CONTENT+=$(cat "$HANDOFF_FILE")
+    MEMORY_CONTENT+=$"\nInstruction: Resume this task, review active diff/plan, and acknowledge handoff."
+fi
+
 if [[ -n "$MEMORY_CONTENT" ]]; then
     FULL="$BASE"$'\n\nMEMORY:'"$MEMORY_CONTENT""$JOURNAL_NOTICE"
 else
