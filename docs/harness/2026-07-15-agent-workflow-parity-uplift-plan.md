@@ -78,7 +78,7 @@ For repositories that must not commit task history, use the same layout under a 
 
 **Owner:** either agent; first implementation should be reviewed by the other.
 
-1. Add `docs/agent-workflow/CONTRACT.md` to `gavan-agent-config` as the canonical schema and privacy policy.
+1. Add `docs/agent-workflow/CONTRACT.md` to `harness-config` as the canonical schema and privacy policy.
 2. Add a repository template or bootstrap helper that creates the task directory and active read model without copying private state.
 3. Add a short repository instruction that directs both agents to read `active-task.md` before work and update the task record after material progress.
 4. Define how a task record is handled on branches and worktrees: task identity stays stable; concurrent writers must use atomic writes and an append lock.

@@ -14,7 +14,7 @@ Claude Code itself needs to be installed first — that's the one manual step th
 
 Open a fresh Claude Code session anywhere on your computer, and say exactly this:
 
-> Restore my Claude Code setup from github.com/MichaelGavanAI/gavan-agent-config
+> Restore my Claude Code setup from github.com/MichaelGavanAI/harness-config
 
 Claude will read this repository and start putting your setup back together — your saved notes about past projects, your custom shortcuts and automations, and your installed add-ons.
 

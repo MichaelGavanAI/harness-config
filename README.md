@@ -1,4 +1,4 @@
-# gavan-agent-config
+# harness-config
 
 > New here? Read [VISION.md](VISION.md) first — it explains why every piece of this setup exists.
 
@@ -11,8 +11,8 @@ A self-contained repo that any Gavan team member (or AI agent) can clone to get 
 ## How to use
 
 ```bash
-git clone git@github-work:Gavan-AI-Labs-LTD/gavan-agent-config.git
-cd gavan-agent-config
+git clone git@github-work:MichaelGavanAI/harness-config.git
+cd harness-config
 claude   # opens Claude Code, reads CLAUDE.md
 ```
 

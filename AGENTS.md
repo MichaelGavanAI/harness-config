@@ -1,8 +1,8 @@
-# Codex Instructions: gavan-agent-config
+# Codex Instructions: harness-config
 
 ## Project
 
-`gavan-agent-config` stores the Gavan AI Labs agent harness, onboarding context, memory snapshots, and setup docs.
+`harness-config` stores the Gavan AI Labs agent harness, onboarding context, memory snapshots, and setup docs.
 
 Historically this repo is Claude Code focused. Codex harness work may be added here only after it is proven outside the Claude harness and Michael approves promotion.
 

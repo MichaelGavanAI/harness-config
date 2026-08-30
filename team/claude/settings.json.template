@@ -5,13 +5,19 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
             "command": "${HOME}/.claude/hooks/superpowers-gate.sh",
             "timeout": 8,
             "statusMessage": "Checking superpowers gate..."
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/task-record-freshness-gate.sh",
+            "timeout": 8,
+            "statusMessage": "Checking task record freshness..."
           }
         ]
       },

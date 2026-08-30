@@ -151,7 +151,7 @@ Solution: One command snapshots everything to GitHub.
                     └──────────────┬──────────────────┘
                                    │
                     ┌──────────────▼──────────────────┐
-                    │      gavan-agent-config         │
+                    │      harness-config         │
                     │   Everyone uses same AI setup   │
                     │   Onboarding: hours, not days   │
                     └──┬──────────┬──────────┬────────┘

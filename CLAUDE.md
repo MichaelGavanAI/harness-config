@@ -329,7 +329,7 @@ mkdir -p ~/projects/work
 
 git clone git@github-gavan:Gavan-AI-Labs-LTD/gavanmanage.git ~/projects/work/gavanmanage
 git clone git@github-gavan:Gavan-AI-Labs-LTD/gavan-cicd.git ~/projects/work/gavan-cicd
-git clone git@github-gavan:Gavan-AI-Labs-LTD/gavan-agent-config.git ~/projects/work/gavan-agent-config
+git clone git@github-gavan:MichaelGavanAI/harness-config.git ~/projects/work/harness-config
 ```
 
 ### B10. Verify

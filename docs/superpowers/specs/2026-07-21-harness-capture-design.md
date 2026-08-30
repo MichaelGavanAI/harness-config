@@ -29,7 +29,7 @@ This repo's stated goal (README): let any team member, or Michael on a new/wiped
 ## Repo structure changes
 
 ```
-gavan-agent-config/
+harness-config/
   RESTORE.md                          <- NEW, plain-language front door (see below)
   CLAUDE.md                           <- existing AI-facing restore instructions, extended (not rewritten) to cover skills + plugin reinstall
   team/claude/
@@ -63,7 +63,7 @@ Plain language, no terminal commands shown as things to type — every step phra
 
 1. **When to use this** — new laptop, wiped machine, or setting up a second computer.
 2. **Before you start** — the one manual thing that can't be automated: making sure Claude Code itself is installed (link to Anthropic's own install instructions, not reproduced here).
-3. **The one thing to say** — a single sentence Michael types into a fresh Claude Code session (e.g. "Restore my Claude Code setup from github.com/MichaelGavanAI/gavan-agent-config") that kicks off the AI following `CLAUDE.md`'s technical steps.
+3. **The one thing to say** — a single sentence Michael types into a fresh Claude Code session (e.g. "Restore my Claude Code setup from github.com/MichaelGavanAI/harness-config") that kicks off the AI following `CLAUDE.md`'s technical steps.
 4. **What you'll be asked for** — secrets (API keys, tokens) explicitly called out as an expected prompt, with one sentence on why they were never stored in the repo.
 5. **How you'll know it worked** — one plain-language check per category (e.g. "ask Claude about an old project — it should remember details from before," not "verify `~/.claude/projects/*/memory/MEMORY.md` exists").
 6. **If something looks wrong** — 2-3 plain symptoms (Claude doesn't remember anything, a skill/command seems missing) each pointing back to "tell Claude Code what you're seeing and it can diagnose using `tools/harness-sync.sh check`," not a troubleshooting flowchart Michael has to self-serve.

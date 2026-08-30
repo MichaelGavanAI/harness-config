@@ -41,7 +41,7 @@ mkdir -p ~/projects/work ~/projects/personal
 # Work repos (use github-work SSH host)
 git clone git@github-work:Gavan-AI-Labs-LTD/gavanmanage.git ~/projects/work/gavanmanage
 git clone git@github-work:Gavan-AI-Labs-LTD/gavan-cicd.git ~/projects/work/gavan-cicd
-git clone git@github-work:Gavan-AI-Labs-LTD/gavan-agent-config.git ~/projects/work/gavan-agent-config
+git clone git@github-work:MichaelGavanAI/harness-config.git ~/projects/work/harness-config
 ```
 
 ## Secrets Required

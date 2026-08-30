@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Bring `gavan-agent-config` to real parity with Michael's live Claude Code setup (memory, hooks, settings, skills, plugins), give him an on-demand tool to keep it that way, and give him a plain-language restore guide.
+**Goal:** Bring `harness-config` to real parity with Michael's live Claude Code setup (memory, hooks, settings, skills, plugins), give him an on-demand tool to keep it that way, and give him a plain-language restore guide.
 
 **Architecture:** One bash script (`tools/harness-sync.sh`) with `check`/`apply` modes does the mechanical diffing and copying for the categories that are safe to automate (memory, hooks, skills, plugin-list). Settings and MCP config are structurally checked (are the right hook events / server names present) but never auto-copied in full, because they carry secrets and machine-specific paths that only a human should scrub — the script flags drift there for manual review instead of guessing at redaction. `RESTORE.md` is then a thin, plain-language wrapper that tells Michael what to say to Claude Code; the technical steps underneath (including plugin reinstall and skill restore) get added to `CLAUDE.md`, which stays the AI-facing layer.
 
@@ -475,7 +475,7 @@ Claude Code itself needs to be installed first — that's the one manual step th
 
 Open a fresh Claude Code session anywhere on your computer, and say exactly this:
 
-> Restore my Claude Code setup from github.com/MichaelGavanAI/gavan-agent-config
+> Restore my Claude Code setup from github.com/MichaelGavanAI/harness-config
 
 Claude will read this repository and start putting your setup back together — your saved notes about past projects, your custom shortcuts and automations, and your installed add-ons.
 
