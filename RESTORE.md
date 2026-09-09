@@ -28,6 +28,11 @@ At some point, Claude will likely ask you to paste in an API key or similar secr
 - **Try a shortcut you used before** (a slash command or a phrase you'd normally use, like caveman mode). If it responds the way it used to, your automations came back correctly.
 - **Check your add-ons are there.** If you had specific plugins installed before (ask Claude "what plugins do I have installed?"), they should be reinstalled and listed.
 
+## Optional extras (not required)
+
+- **Status line PR indicator.** The status line (`team/claude/statusline-command.sh`) shows the current git branch and its pull-request state. The branch part always works; the PR state needs the GitHub CLI (`gh`) logged in.
+- **Rate-limit overlay.** The status line also feeds a small tool called `ai-quota-overlay` (a personal project, `~/projects/personal/ai-quota-overlay`). If that tool isn't installed, the status line just skips it silently — nothing breaks.
+
 ## If something looks wrong
 
 - **Claude doesn't remember anything about your past work** — tell Claude directly: "my memory doesn't seem to have come back, can you check?" It can run a diagnostic (`tools/harness-sync.sh check`) to see what's missing.

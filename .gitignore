@@ -8,14 +8,3 @@ node_modules/
 .vercel
 __pycache__/
 *.pyc
-
-# marketplace-plugin skills are tracked via installed-plugins.json, not vendored
-team/claude/skills/agents-sdk/
-team/claude/skills/agy-worker/
-team/claude/skills/cloudflare*/
-team/claude/skills/durable-objects/
-team/claude/skills/sandbox-*/
-team/claude/skills/turnstile-spin/
-team/claude/skills/web-perf/
-team/claude/skills/workers-best-practices/
-team/claude/skills/wrangler/
