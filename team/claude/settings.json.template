@@ -43,6 +43,12 @@
           },
           {
             "type": "command",
+            "command": "${HOME}/.claude/hooks/primary-worktree-checkout-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Checking primary-worktree checkout guard..."
+          },
+          {
+            "type": "command",
             "command": "${HOME}/.claude/hooks/worktree-cleanup-guard.sh",
             "timeout": 5,
             "statusMessage": "Checking worktree cleanliness..."
@@ -82,13 +88,25 @@
       {
         "matcher": "manual",
         "hooks": [
-          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 }
+          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/precompact-goal-snapshot.sh",
+            "timeout": 8,
+            "statusMessage": "Snapshotting goal/plan before compaction..."
+          }
         ]
       },
       {
         "matcher": "auto",
         "hooks": [
-          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 }
+          { "type": "command", "command": "${HOME}/.claude/hooks/memory-precompact.sh", "timeout": 5 },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/precompact-goal-snapshot.sh",
+            "timeout": 8,
+            "statusMessage": "Snapshotting goal/plan before compaction..."
+          }
         ]
       }
     ],
@@ -134,6 +152,11 @@
           {
             "type": "command",
             "command": "${HOME}/.claude/hooks/task-record-session.sh",
+            "timeout": 8
+          },
+          {
+            "type": "command",
+            "command": "${HOME}/.claude/hooks/precompact-snapshot-reinject.sh",
             "timeout": 8
           }
         ]
