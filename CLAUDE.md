@@ -89,14 +89,44 @@ cp team/claude/work-project-CLAUDE.md ~/projects/work/.claude/CLAUDE.md
 cp team/squad-manifest.md ~/projects/work/docs/superpowers/team-manifest.md
 
 # Per-project memory buckets — global/work buckets alone are NOT enough. Claude Code keeps a
-# THIRD memory bucket per project directory (escaped cwd, e.g. gavanmanage, gavan-cicd), and
-# most of the real day-to-day project knowledge (schema state, in-flight work, bug history)
-# lives there, not in global/work. Restore every per-project bucket this repo has a snapshot of:
-for proj_dir in members/michael/memory/projects/*/; do
-  [ -d "$proj_dir" ] || continue
-  proj_name=$(basename "$proj_dir")
-  mkdir -p ~/.claude/projects/"$proj_name"/memory
-  cp -r "$proj_dir"/* ~/.claude/projects/"$proj_name"/memory/
+# THIRD memory bucket per project directory, keyed by that directory's absolute path with every
+# "/" replaced by "-" (e.g. a session opened in ~/projects/work/gavanmanage gets bucket
+# ~/.claude/projects/-home-<user>-projects-work-gavanmanage/memory — the exact string depends on
+# THIS machine's home dir and OS, so it can never be snapshotted verbatim). Most of the real
+# day-to-day project knowledge (schema state, in-flight work, bug history) lives here, not in
+# global/work.
+#
+# members/michael/memory/projects/{work,personal}/<relative-path>/ mirrors each project's path
+# *relative to ~/projects/work or ~/projects/personal* (not the old machine's absolute path), so
+# it stays correct across machines/OSes/usernames. A `_root` subfolder holds memory for a session
+# opened directly in ~/projects/work (or personal) with no project subdirectory. Nesting is
+# supported (e.g. GLS/GMVP4-MaterialAdvisor was its own separate project directory, hence its
+# own separate bucket) — every directory that itself contains memory files is restored to its
+# own bucket, computed fresh for this machine. The one exception: a subfolder literally named
+# `archive` is always part of its PARENT project's own bucket (curated old memory kept inside
+# one project, never a distinct project directory on disk) — its files land in that parent
+# bucket's memory/archive/, not a bucket of their own:
+for kind in work personal; do
+  base="members/michael/memory/projects/$kind"
+  [ -d "$base" ] || continue
+  find "$base" -type f -print0 | while IFS= read -r -d '' f; do
+    proj_dir=$(dirname "$f")
+    rel="${proj_dir#"$base"}"
+    rel="${rel#/}"
+    archive_suffix=""
+    case "$rel" in
+      */archive) archive_suffix="archive/"; rel="${rel%/archive}" ;;
+      archive) archive_suffix="archive/"; rel="" ;;
+    esac
+    if [ -z "$rel" ] || [ "$rel" = "_root" ]; then
+      abs="$HOME/projects/$kind"
+    else
+      abs="$HOME/projects/$kind/$rel"
+    fi
+    hash=$(printf '%s' "$abs" | sed 's#/#-#g')
+    mkdir -p ~/.claude/projects/"$hash"/memory/"$archive_suffix"
+    cp "$f" ~/.claude/projects/"$hash"/memory/"$archive_suffix"
+  done
 done
 
 # Restore personal skills (e.g. harness-health)
